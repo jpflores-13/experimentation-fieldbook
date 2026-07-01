@@ -1,12 +1,12 @@
 import {
-  SquaresFour, Stack, Compass, TestTube, ListChecks, Graph, BookOpenText, ArrowSquareOut,
+  SquaresFour, Stack, Compass, TestTube, ListChecks, Graph, BookOpenText, ArrowSquareOut, ArrowCounterClockwise,
 } from '@phosphor-icons/react';
 import { useAppState } from '../state/AppState';
 import type { Screen } from '../types';
 import { GUIDE_URL } from '../config';
 
 export function Sidebar() {
-  const { screen, go, concepts, tests } = useAppState();
+  const { screen, go, concepts, tests, resetToDemoData } = useAppState();
 
   const workspaceItems: { screen: Screen; label: string; icon: React.ElementType; badge?: string }[] = [
     { screen: 'dashboard', label: 'Dashboard', icon: SquaresFour },
@@ -65,7 +65,25 @@ export function Sidebar() {
         <NavButton item={{ screen: 'systems', label: 'Systems maps', icon: Graph }} />
       </nav>
 
-      <div style={{ marginTop: 'auto', padding: 12 }}>
+      <div style={{ marginTop: 'auto', padding: '12px 12px 0' }}>
+        <button
+          onClick={() => {
+            if (window.confirm('Reset to the pre-loaded demo data? This replaces every concept, test, support map, loop graph and 5Rs diagnostic you\'ve created with the original seed content — this can\'t be undone.')) {
+              resetToDemoData();
+            }
+          }}
+          className="fb-navitem"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 12, width: '100%', boxSizing: 'border-box',
+            border: '1px solid #41454e', background: 'transparent', color: 'inherit', textDecoration: 'none',
+            padding: '9px 12px', borderRadius: 9, fontSize: 13.5, fontWeight: 500, cursor: 'pointer', marginBottom: 8,
+          }}
+        >
+          <ArrowCounterClockwise size={19} style={{ flex: '0 0 auto' }} />
+          <span className="fb-navlabel">Reset to demo data</span>
+        </button>
+      </div>
+      <div style={{ padding: '0 12px 12px' }}>
         <a
           href={GUIDE_URL}
           target="_blank"

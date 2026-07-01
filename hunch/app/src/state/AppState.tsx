@@ -84,6 +84,7 @@ interface AppStateValue extends PersistedState {
   setStep: (step: Step) => void;
   setSysTab: (t: SysTab) => void;
   setSysArch: (id: string | null) => void;
+  resetToDemoData: () => void;
   addSupportNote: (mapId: string, ring: Exclude<Ring, 'role'>) => string;
   renameSupportNote: (mapId: string, noteId: string, text: string) => void;
   moveSupportNote: (mapId: string, noteId: string, x: number, y: number) => void;
@@ -228,6 +229,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setStep: (step) => patch({ step }),
     setSysTab: (sysTab) => patch({ sysTab, sysArch: null }),
     setSysArch: (sysArch) => patch({ sysArch }),
+    resetToDemoData: () => setState(defaultState),
     renameSupportMap: (mapId, title) => {
       const trimmed = title.trim();
       if (!trimmed) return;

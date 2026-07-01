@@ -1,9 +1,9 @@
 import {
-  Stack, TestTube, ListChecks, SealCheck, ArrowUp, ArrowRight, Lightbulb,
+  ArrowRight, Lightbulb,
   BookOpenText, ArrowSquareOut, X, Trash,
 } from '@phosphor-icons/react';
 import { useAppState } from '../state/AppState';
-import { Card, Chip, SegmentBar, ThinBar } from '../components/ui';
+import { Card, Chip, SegmentBar } from '../components/ui';
 import type { HomeVariant } from '../types';
 import { GUIDE_URL } from '../config';
 
@@ -17,7 +17,6 @@ const chipStyle: Record<string, { color: string; bg: string; border: string }> =
 
 export function Dashboard() {
   const { home, setHome, go, concepts, setActiveConcept, deleteConcept, clearConcepts } = useAppState();
-  const activeCount = concepts.filter(c => !c.shelved).length;
 
   const toggle = (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
@@ -74,41 +73,6 @@ export function Dashboard() {
   function VariantA() {
     return (
       <div className="fb-screen">
-        <div className="fb-grid4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 20 }}>
-          <Card style={{ padding: '17px 18px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#83878f' }}>Active concepts</span>
-              <Stack size={17} color="#008ecd" />
-            </div>
-            <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-.02em' }}>{activeCount}</div>
-            <div style={{ fontSize: 11.5, color: '#2ea38e', fontWeight: 600, marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}><ArrowUp size={11} weight="bold" /> {concepts.length} total</div>
-          </Card>
-          <Card style={{ padding: '17px 18px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#83878f' }}>Tests running</span>
-              <TestTube size={17} color="#008ecd" />
-            </div>
-            <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-.02em' }}>3</div>
-            <div style={{ fontSize: 11.5, color: '#83878f', fontWeight: 500, marginTop: 3 }}>2 in field · 1 pretest</div>
-          </Card>
-          <Card style={{ padding: '17px 18px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#83878f' }}>Assumptions tested</span>
-              <ListChecks size={17} color="#008ecd" />
-            </div>
-            <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-.02em' }}>24<span style={{ fontSize: 16, color: '#bcbfc4', fontWeight: 600 }}>/41</span></div>
-            <div style={{ marginTop: 8 }}><ThinBar value={59} /></div>
-          </Card>
-          <Card style={{ padding: '17px 18px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <span style={{ fontSize: 12, fontWeight: 600, color: '#83878f' }}>Validated</span>
-              <SealCheck size={17} weight="fill" color="#2ea38e" />
-            </div>
-            <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-.02em' }}>2</div>
-            <div style={{ fontSize: 11.5, color: '#83878f', fontWeight: 500, marginTop: 3 }}>moved to build</div>
-          </Card>
-        </div>
-
         <Card style={{ padding: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
             <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Concept portfolio</h3>
