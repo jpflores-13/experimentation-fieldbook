@@ -7,18 +7,40 @@ import {
 import '@xyflow/react/dist/style.css';
 import {
   Graph, Target, ArrowsClockwise, ArrowsCounterClockwise, Shapes, Star, Sparkle, Plus,
-  ArrowBendUpRight, PlusCircle, Eye, Sliders, ArrowLeft, X,
+  ArrowBendUpRight, PlusCircle, Eye, Sliders, ArrowLeft, X, ArrowsOutSimple, Trash,
+  ChartPolar, CaretRight, Copy, LockSimple, LockSimpleOpen,
 } from '@phosphor-icons/react';
 import { useAppState } from '../state/AppState';
 import { archetypes, archetypeById, type GlyphSpec } from '../data/archetypes';
-import type { SysTab, Ring, StarRating, SupportNote, LoopGraph, Polarity } from '../types';
+import type { SysTab, Ring, StarRating, SupportNote, LoopGraph, Polarity, FiveRElement, FiveRDiagnostic } from '../types';
 import { ACTIVE_MAP_ID } from '../data/systemsSeed';
 import { detectLoops, loopBadgeText, loopColors } from '../state/loopAnalysis';
+import { fiveRElements, fiveRMeta, fiveRQuestions } from '../data/fiveRsQuestions';
 import { Card } from '../components/ui';
+
+function openPopout(tool: 'support' | 'loops' | 'fiveRs') {
+  const url = new URL(window.location.href);
+  url.search = `?popout=${tool}`;
+  window.open(url.toString(), `scintilla-popout-${tool}`, 'width=1040,height=760,noopener');
+}
+
+function PopoutButton({ tool }: { tool: 'support' | 'loops' | 'fiveRs' }) {
+  return (
+    <button
+      onClick={() => openPopout(tool)}
+      className="fb-hover fb-hover-bg"
+      title="Open in a new window"
+      style={{ border: '1px solid #e3e6ea', background: '#fff', borderRadius: 6, padding: '5px 9px', fontSize: 11.5, fontWeight: 600, color: '#5b5f67', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}
+    >
+      <ArrowsOutSimple size={13} /> Pop out
+    </button>
+  );
+}
 
 const tabs: { key: SysTab; label: string; icon: React.ElementType }[] = [
   { key: 'support', label: 'System Support Map', icon: Target },
   { key: 'loops', label: 'Feedback Loops', icon: ArrowsClockwise },
+  { key: 'fiveRs', label: '5Rs Diagnostic', icon: ChartPolar },
   { key: 'archetypes', label: 'Systems Archetypes', icon: Shapes },
 ];
 
@@ -62,6 +84,7 @@ export function Systems() {
 
       {sysTab === 'support' && <SupportMapTab />}
       {sysTab === 'loops' && <FeedbackLoopsTab />}
+      {sysTab === 'fiveRs' && <FiveRsTab />}
       {sysTab === 'archetypes' && <ArchetypesTab />}
     </div>
   );
@@ -242,7 +265,7 @@ function RingNote({ note, containerRef, startEditing, onEditStarted }: {
   );
 }
 
-function SupportMapTab() {
+export function SupportMapTab() {
   const { supportMaps, addSupportNote } = useAppState();
   const map = supportMaps[ACTIVE_MAP_ID];
   const containerRef = useRef<HTMLDivElement>(null);
@@ -258,9 +281,12 @@ function SupportMapTab() {
   return (
     <div className="fb-screen fb-grid2" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 18 }}>
       <Card style={{ padding: 20 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, gap: 10, flexWrap: 'wrap' }}>
           <h3 style={{ margin: 0, fontSize: 14.5, fontWeight: 700 }}>{map.title}</h3>
-          <span style={{ fontSize: 11, color: '#9b9c9f' }}>role-centred map · click a note to rename, drag to move</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 11, color: '#9b9c9f' }}>role-centred map · click a note to rename, drag to move</span>
+            <PopoutButton tool="support" />
+          </div>
         </div>
         <div ref={containerRef} style={{ position: 'relative', width: '100%', maxWidth: 520, margin: '6px auto 0', aspectRatio: '1/1' }}>
           <div style={{ position: 'absolute', inset: '1%', borderRadius: '50%', border: '1.5px solid #a9d4ef', background: 'rgba(191,224,245,.10)' }} />
@@ -462,7 +488,7 @@ function LoopArrowDefs() {
 }
 
 function LoopCanvas({ graph, loops }: { graph: LoopGraph; loops: ReturnType<typeof detectLoops> }) {
-  const { addLoopNode, renameLoopNode, moveLoopNode, addLoopLink } = useAppState();
+  const { addLoopNode, renameLoopNode, moveLoopNode, addLoopLink, clearLoopGraph } = useAppState();
   const { zoomIn, zoomOut } = useReactFlow();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [linkMode, setLinkMode] = useState(false);
@@ -534,9 +560,15 @@ function LoopCanvas({ graph, loops }: { graph: LoopGraph; loops: ReturnType<type
           <button onClick={() => zoomIn()} style={{ border: '1px solid #cfe8f6', background: '#fff', borderRadius: 6, width: 26, height: 26, fontSize: 14, fontWeight: 700, color: '#0079b0', cursor: 'pointer' }}>+</button>
           <button onClick={() => zoomOut()} style={{ border: 'none', background: 'transparent', borderRadius: 6, width: 26, height: 26, fontSize: 15, fontWeight: 700, color: '#5b5f67', cursor: 'pointer' }}>−</button>
         </div>
+        <button
+          onClick={() => { if (window.confirm('Clear this canvas? All elements and links will be removed.')) clearLoopGraph(loopGraphId); }}
+          title="Clear canvas"
+          style={{ border: '1px solid #f0d7d2', background: '#fff', borderRadius: 6, padding: '5px 9px', fontSize: 11.5, fontWeight: 600, color: '#b5502a', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}
+        ><Trash size={13} /> Clear</button>
         <span style={{ marginLeft: 'auto', fontSize: 11.5, fontWeight: 600, color: '#25826f', background: '#eef6f3', border: '1px solid #cfe9e2', borderRadius: 20, padding: '4px 11px' }}>
           Loops found: <b>{loopBadgeText(loops)}</b>
         </span>
+        <PopoutButton tool="loops" />
       </div>
 
       {linkMode && (
@@ -578,8 +610,8 @@ function LoopCanvas({ graph, loops }: { graph: LoopGraph; loops: ReturnType<type
   );
 }
 
-function FeedbackLoopsTab() {
-  const { loopGraphs, deleteLoopNode } = useAppState();
+export function FeedbackLoopsTab() {
+  const { loopGraphs, deleteLoopNode, deleteLoopLink } = useAppState();
   const graph = loopGraphs[loopGraphId];
   const loops = useMemo(() => detectLoops(graph), [graph]);
   const { nodeTone } = loopColors(loops);
@@ -613,7 +645,7 @@ function FeedbackLoopsTab() {
               <span style={{ fontSize: 12.5, lineHeight: 1.4 }}>moves the <b>opposite</b> direction</span>
             </div>
           </div>
-          <div style={{ fontSize: 10.5, color: '#9b9c9f', marginTop: 8 }}>Click an element to rename it; select a link and press Delete to remove it.</div>
+          <div style={{ fontSize: 10.5, color: '#9b9c9f', marginTop: 8 }}>Click an element to rename it; delete elements or links from the lists on the right, or use Clear to start over.</div>
         </Card>
 
         <Card style={{ padding: 18, borderRadius: 14 }}>
@@ -668,6 +700,38 @@ function FeedbackLoopsTab() {
           </div>
         </Card>
 
+        <Card style={{ padding: 18, borderRadius: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 11 }}>
+            <h4 style={{ margin: 0, fontSize: 13.5, fontWeight: 700 }}>Links</h4>
+            <span style={{ fontSize: 11, color: '#9b9c9f' }}>{graph.links.length}</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {graph.links.length === 0 && (
+              <div style={{ fontSize: 11.5, color: '#b0b3b8', fontStyle: 'italic' }}>No links yet — use "Link" above to connect two elements.</div>
+            )}
+            {graph.links.map(l => {
+              const fromLabel = graph.nodes.find(n => n.id === l.from)?.label ?? '?';
+              const toLabel = graph.nodes.find(n => n.id === l.to)?.label ?? '?';
+              return (
+                <div key={l.id} className="fb-hover fb-hover-bg" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, padding: '6px 8px', borderRadius: 7 }}>
+                  <span style={{
+                    width: 16, height: 16, borderRadius: '50%', flex: '0 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    border: `1.5px solid ${l.polarity === '-' ? '#c25a48' : '#008ecd'}`, color: l.polarity === '-' ? '#c25a48' : '#0079b0', fontSize: 10, fontWeight: 700,
+                  }}>{l.polarity}</span>
+                  <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{fromLabel} → {toLabel}</span>
+                  <button
+                    onClick={() => deleteLoopLink(loopGraphId, l.id)}
+                    style={{ border: 'none', background: 'transparent', color: '#b0b3b8', cursor: 'pointer', padding: 0, display: 'flex' }}
+                    title="Delete link"
+                  >
+                    <X size={11} />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+
         <div style={{ background: '#eef7fc', border: '1px solid #cfe8f6', borderRadius: 14, padding: 16 }}>
           <div style={{ fontSize: 12.5, fontWeight: 700, color: '#0d3f57', marginBottom: 4 }}>What this tells you</div>
           {firstR && firstB ? (
@@ -689,6 +753,271 @@ function FeedbackLoopsTab() {
             </p>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function radarPoint(index: number, value: number, cx: number, cy: number, r: number) {
+  const angle = (-90 + index * (360 / 5)) * (Math.PI / 180);
+  return { x: cx + r * value * Math.cos(angle), y: cy + r * value * Math.sin(angle) };
+}
+
+function RadarChart({ diagnostic }: { diagnostic: FiveRDiagnostic }) {
+  const cx = 120;
+  const cy = 122;
+  const r = 90;
+  const rings = [0.2, 0.4, 0.6, 0.8, 1];
+  const dataPoints = fiveRElements.map((el, i) => radarPoint(i, diagnostic.elements[el].rating / 5, cx, cy, r));
+
+  return (
+    <svg viewBox="0 0 240 250" style={{ width: '100%', maxWidth: 260, display: 'block', margin: '0 auto' }}>
+      {rings.map(ring => (
+        <polygon
+          key={ring}
+          points={fiveRElements.map((_, i) => { const p = radarPoint(i, ring, cx, cy, r); return `${p.x},${p.y}`; }).join(' ')}
+          fill="none" stroke="#e7eaee" strokeWidth={1}
+        />
+      ))}
+      {fiveRElements.map((el, i) => {
+        const edge = radarPoint(i, 1, cx, cy, r);
+        return <line key={el} x1={cx} y1={cy} x2={edge.x} y2={edge.y} stroke="#e7eaee" strokeWidth={1} />;
+      })}
+      <polygon points={dataPoints.map(p => `${p.x},${p.y}`).join(' ')} fill="rgba(0,142,205,.16)" stroke="#008ecd" strokeWidth={2} />
+      {dataPoints.map((p, i) => <circle key={fiveRElements[i]} cx={p.x} cy={p.y} r={3.5} fill="#008ecd" />)}
+      {fiveRElements.map((el, i) => {
+        const label = radarPoint(i, 1.22, cx, cy, r);
+        return (
+          <text key={el} x={label.x} y={label.y} fontSize={10.5} fontWeight={700} fill={fiveRMeta[el].textColor} textAnchor="middle" dominantBaseline="middle">
+            {fiveRMeta[el].label}
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
+function RatingPicker({ value, onChange, color, readOnly }: { value: number; onChange: (v: number) => void; color: string; readOnly?: boolean }) {
+  return (
+    <div style={{ display: 'flex', gap: 5 }}>
+      {[0, 1, 2, 3, 4, 5].map(n => (
+        <button
+          key={n}
+          disabled={readOnly}
+          onClick={() => onChange(n)}
+          style={{
+            width: 25, height: 25, borderRadius: 7, fontSize: 11.5, fontWeight: 700, cursor: readOnly ? 'default' : 'pointer',
+            border: `1.5px solid ${n <= value ? color : '#e3e6ea'}`, background: n <= value ? color : '#fff', color: n <= value ? '#fff' : '#9b9c9f',
+          }}
+        >{n}</button>
+      ))}
+    </div>
+  );
+}
+
+function FiveRElementCard({ diagnostic, element, readOnly }: { diagnostic: FiveRDiagnostic; element: FiveRElement; readOnly: boolean }) {
+  const { setFiveRRating, updateFiveRAnswer, updateFiveRGapNote } = useAppState();
+  const meta = fiveRMeta[element];
+  const data = diagnostic.elements[element];
+  const questions = fiveRQuestions[element];
+
+  return (
+    <Card style={{ borderTop: `3px solid ${meta.color}`, padding: 18, borderRadius: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: meta.textColor }}>{meta.label}</span>
+        <RatingPicker value={data.rating} onChange={v => setFiveRRating(diagnostic.id, element, v)} color={meta.color} readOnly={readOnly} />
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 12 }}>
+        {questions.map((q, i) => (
+          <div key={i}>
+            <div style={{ fontSize: 11.5, color: '#5b5f67', marginBottom: 5, lineHeight: 1.4 }}>{q}</div>
+            {readOnly ? (
+              <div style={{ fontSize: 12, color: data.answers[i] ? '#2c2e35' : '#b0b3b8', fontStyle: data.answers[i] ? 'normal' : 'italic', background: meta.bg, borderRadius: 8, padding: '8px 10px' }}>
+                {data.answers[i] || 'No answer recorded.'}
+              </div>
+            ) : (
+              <textarea
+                value={data.answers[i]}
+                onChange={e => updateFiveRAnswer(diagnostic.id, element, i, e.target.value)}
+                placeholder="Answer this question…"
+                rows={2}
+                style={{ width: '100%', fontSize: 12, fontFamily: 'inherit', color: '#2c2e35', background: meta.bg, border: `1px solid ${meta.border}`, borderRadius: 8, padding: '8px 10px', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+      <div>
+        <div style={{ fontSize: 10.5, fontWeight: 700, color: '#83878f', letterSpacing: '.04em', marginBottom: 5 }}>GAP / WHAT'S MISSING <span style={{ fontWeight: 500, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></div>
+        {readOnly ? (
+          <div style={{ fontSize: 12, color: data.gapNote ? '#2c2e35' : '#b0b3b8', fontStyle: data.gapNote ? 'normal' : 'italic' }}>{data.gapNote || 'None noted.'}</div>
+        ) : (
+          <textarea
+            value={data.gapNote}
+            onChange={e => updateFiveRGapNote(diagnostic.id, element, e.target.value)}
+            placeholder="Note any gap for this element…"
+            rows={2}
+            style={{ width: '100%', fontSize: 12, fontFamily: 'inherit', color: '#2c2e35', background: '#fff', border: '1px solid #e3e6ea', borderRadius: 8, padding: '8px 10px', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
+          />
+        )}
+      </div>
+    </Card>
+  );
+}
+
+function FiveRLibraryRow({ diagnostic, onOpen, onDuplicate, onDelete }: { diagnostic: FiveRDiagnostic; onOpen: () => void; onDuplicate: () => void; onDelete: () => void }) {
+  const avg = fiveRElements.reduce((sum, el) => sum + diagnostic.elements[el].rating, 0) / 5;
+  return (
+    <div onClick={onOpen} className="fb-hover fb-hover-tint fb-note" style={{ display: 'flex', alignItems: 'center', gap: 12, border: '1px solid #e7eaee', borderRadius: 11, padding: '13px 14px', cursor: 'pointer' }}>
+      <span style={{ width: 34, height: 34, borderRadius: 9, background: '#eef7fc', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
+        <ChartPolar size={17} color="#008ecd" />
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 13, fontWeight: 700 }}>{diagnostic.name}</span>
+          <span style={{ fontSize: 10, fontWeight: 700, color: diagnostic.status === 'final' ? '#25826f' : '#0079b0', background: diagnostic.status === 'final' ? '#eef6f3' : '#eef7fc', borderRadius: 20, padding: '1px 7px' }}>
+            {diagnostic.status === 'final' ? 'FINAL' : 'DRAFT'}
+          </span>
+        </div>
+        <div style={{ fontSize: 11, color: '#9b9c9f', marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {diagnostic.systemBoundary || 'No boundary noted'} · avg {avg.toFixed(1)}/5 · updated {new Date(diagnostic.updatedAt).toLocaleDateString()}
+        </div>
+      </div>
+      <button onClick={e => { e.stopPropagation(); onDuplicate(); }} title="Duplicate" style={{ border: 'none', background: 'transparent', color: '#b0b3b8', cursor: 'pointer', padding: 4, display: 'flex', flex: '0 0 auto' }}>
+        <Copy size={14} />
+      </button>
+      <button className="fb-note-delete" onClick={e => { e.stopPropagation(); onDelete(); }} title="Delete" style={{ border: 'none', background: 'transparent', color: '#b0b3b8', cursor: 'pointer', padding: 4, display: 'flex', flex: '0 0 auto', opacity: 0 }}>
+        <X size={14} />
+      </button>
+      <CaretRight color="#c9cbce" />
+    </div>
+  );
+}
+
+export function FiveRsTab() {
+  const {
+    fiveRs, activeFiveRId, setActiveFiveR, createFiveRDiagnostic, deleteFiveRDiagnostic,
+    duplicateFiveRDiagnostic, renameFiveRDiagnostic, updateFiveRBoundary, setFiveRStatus,
+  } = useAppState();
+  const active = fiveRs.find(d => d.id === activeFiveRId);
+
+  if (!active) {
+    return (
+      <div className="fb-screen">
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18, flexWrap: 'wrap', gap: 12 }}>
+          <div style={{ flex: 1, minWidth: 240 }}>
+            <h3 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 700 }}>5Rs System Diagnostic</h3>
+            <p className="serif" style={{ margin: 0, fontSize: 13, color: '#6b6e76', maxWidth: 560, lineHeight: 1.5 }}>
+              Listen to the "as is" system through Results, Roles, Relationships, Rules &amp; Resources — adapted from the USAID 5Rs Framework.
+            </p>
+          </div>
+          <button onClick={() => createFiveRDiagnostic()} className="fb-btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#008ecd', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 15px', fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            <Plus size={14} weight="bold" /> New diagnostic
+          </button>
+        </div>
+
+        {fiveRs.length === 0 ? (
+          <Card style={{ padding: '40px 24px', textAlign: 'center', color: '#9b9c9f' }}>
+            <ChartPolar size={30} style={{ margin: '0 auto 10px', display: 'block' }} />
+            <div style={{ fontSize: 13.5 }}>No diagnostics yet — create one to assess a local system.</div>
+          </Card>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {fiveRs.map(d => (
+              <FiveRLibraryRow
+                key={d.id}
+                diagnostic={d}
+                onOpen={() => setActiveFiveR(d.id)}
+                onDuplicate={() => duplicateFiveRDiagnostic(d.id)}
+                onDelete={() => { if (window.confirm(`Delete "${d.name}"? This can't be undone.`)) deleteFiveRDiagnostic(d.id); }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const readOnly = active.status === 'final';
+
+  return (
+    <div className="fb-screen">
+      <button onClick={() => setActiveFiveR(null)} className="fb-hover fb-hover-bg no-print" style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#fff', border: '1px solid #e3e6ea', borderRadius: 9, padding: '8px 13px', fontSize: 12.5, fontWeight: 600, color: '#5b5f67', cursor: 'pointer', marginBottom: 16 }}>
+        <ArrowLeft size={13} weight="bold" /> All diagnostics
+      </button>
+
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14, marginBottom: 18, flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: 240 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 6, flexWrap: 'wrap' }}>
+            {readOnly ? (
+              <h2 style={{ margin: 0, fontSize: 19, fontWeight: 700, letterSpacing: '-.01em' }}>{active.name}</h2>
+            ) : (
+              <input
+                value={active.name}
+                onChange={e => renameFiveRDiagnostic(active.id, e.target.value || active.name)}
+                style={{ fontSize: 19, fontWeight: 700, letterSpacing: '-.01em', border: 'none', background: 'transparent', outline: 'none', minWidth: 160 }}
+              />
+            )}
+            <span style={{ fontSize: 11, fontWeight: 700, color: readOnly ? '#25826f' : '#0079b0', background: readOnly ? '#eef6f3' : '#eef7fc', border: `1px solid ${readOnly ? '#cfe9e2' : '#cfe8f6'}`, borderRadius: 20, padding: '2px 9px' }}>
+              {readOnly ? 'FINAL · VIEW ONLY' : 'DRAFT'}
+            </span>
+          </div>
+          {readOnly ? (
+            <div style={{ fontSize: 12.5, color: '#83878f' }}>{active.systemBoundary || 'No system boundary noted.'}</div>
+          ) : (
+            <input
+              value={active.systemBoundary}
+              onChange={e => updateFiveRBoundary(active.id, e.target.value)}
+              placeholder="Describe the focal result / system boundary you're assessing…"
+              style={{ fontSize: 12.5, color: '#5b5f67', border: 'none', background: 'transparent', outline: 'none', width: '100%', maxWidth: 520 }}
+            />
+          )}
+        </div>
+        <div className="no-print" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button onClick={() => setFiveRStatus(active.id, readOnly ? 'draft' : 'final')} className="fb-hover fb-hover-bg" style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid #e3e6ea', background: '#fff', borderRadius: 8, padding: '7px 11px', fontSize: 11.5, fontWeight: 600, color: '#5b5f67', cursor: 'pointer' }}>
+            {readOnly ? <LockSimpleOpen size={13} /> : <LockSimple size={13} />} {readOnly ? 'Unlock to edit' : 'Mark as final'}
+          </button>
+          <button onClick={() => duplicateFiveRDiagnostic(active.id)} className="fb-hover fb-hover-bg" style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid #e3e6ea', background: '#fff', borderRadius: 8, padding: '7px 11px', fontSize: 11.5, fontWeight: 600, color: '#5b5f67', cursor: 'pointer' }}>
+            <Copy size={13} /> Duplicate
+          </button>
+          <PopoutButton tool="fiveRs" />
+        </div>
+      </div>
+
+      <div className="fb-grid2" style={{ display: 'grid', gridTemplateColumns: '.85fr 1.15fr', gap: 18, marginBottom: 18 }}>
+        <Card style={{ padding: 18, borderRadius: 14 }}>
+          <div style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 4 }}>System snapshot</div>
+          <div style={{ fontSize: 11, color: '#9b9c9f', marginBottom: 14 }}>0 = not functioning · 5 = strong &amp; sustainable</div>
+          <RadarChart diagnostic={active} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 14 }}>
+            {fiveRElements.map(el => {
+              const meta = fiveRMeta[el];
+              return (
+                <div key={el} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11.5 }}>
+                  <span style={{ width: 9, height: 9, borderRadius: '50%', background: meta.color, flex: '0 0 auto' }} />
+                  <span style={{ flex: 1 }}>{meta.label}</span>
+                  <span style={{ fontWeight: 700, color: meta.textColor }}>{active.elements[el].rating} / 5</span>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+
+        <div style={{ background: '#eef7fc', border: '1px solid #cfe8f6', borderRadius: 14, padding: 16 }}>
+          <div style={{ fontSize: 12.5, fontWeight: 700, color: '#0d3f57', marginBottom: 6 }}>About this tool</div>
+          <p style={{ margin: '0 0 8px', fontSize: 12, color: '#33607a', lineHeight: 1.5 }}>
+            Adapted from USAID's 5Rs Framework for listening to a local system "as is." Rate each element 0–5, answer the guiding questions from Table 1 of the technical note, and note any gaps you find.
+          </p>
+          <p style={{ margin: 0, fontSize: 11, color: '#5b8ba3', fontStyle: 'italic' }}>
+            USAID, "The 5Rs Framework in the Program Cycle," Technical Note, Version 2.1, October 2016.
+          </p>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {fiveRElements.map(el => (
+          <FiveRElementCard key={el} diagnostic={active} element={el} readOnly={readOnly} />
+        ))}
       </div>
     </div>
   );

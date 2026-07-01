@@ -2,8 +2,11 @@
 
 **Scintilla** (formerly "Hunch") is a tool for practitioners and design-thinking
 students to work through *The Experimentation Field Book*'s five-step process
-before they build anything — plus a **Systems mapping** workspace (a real,
-editable Support Map and causal-loop Feedback Loops canvas, and a Systems
+before they build anything. Concepts are fully your own — create, rename,
+and delete them, with every box in every step editable in place, and
+confirming a test in Step 3 logs it straight into the Tests tracker. Plus a
+**Systems mapping** workspace (a real, editable Support Map, a causal-loop
+Feedback Loops canvas, a 5Rs System Diagnostic library, and a Systems
 Archetypes reference gallery) for understanding the system an idea lives in.
 
 - **[`app/`](app/)** — the product: portfolio dashboard (3 layout variants),
@@ -12,6 +15,14 @@ Archetypes reference gallery) for understanding the system an idea lives in.
   `localStorage`. No collaboration/team features — this is a single-user tool.
 - **[`guide/`](guide/)** — *"How the Scintilla app works"*, a Positron-style
   docs site covering every screen, including the systems mapping tools.
+
+## Live
+
+- App: https://scintilla-dashboard.netlify.app/
+- Guide: https://scintilla-guide.netlify.app/
+
+Each links to the other (sidebar "Guide" link in the app, "Open app" in the
+guide's navbar).
 
 ## Running
 

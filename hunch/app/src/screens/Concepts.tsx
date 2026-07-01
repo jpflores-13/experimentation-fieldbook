@@ -1,15 +1,13 @@
-import { Plus, CaretRight, SneakerMove, HandWaving, CompassTool, FirstAid, Lightning, Users } from '@phosphor-icons/react';
+import { Plus, CaretRight, Lightbulb, X } from '@phosphor-icons/react';
 import { useAppState } from '../state/AppState';
-import { concepts } from '../data/seed';
 import { Card, SectionEyebrow } from '../components/ui';
 
-const iconMap: Record<string, React.ElementType> = { SneakerMove, HandWaving, CompassTool, FirstAid, Lightning, Users };
 const accentBg: Record<string, string> = { blue: '#eef7fc', teal: '#eef6f3', slate: '#f1f3f6' };
 const accentFg: Record<string, string> = { blue: '#008ecd', teal: '#2ea38e', slate: '#5b6b7a' };
 const dotColor: Record<string, string> = { blue: '#008ecd', teal: '#2ea38e', slate: '#5b6b7a' };
 
 export function Concepts() {
-  const { go } = useAppState();
+  const { concepts, setActiveConcept, createConcept, deleteConcept, activeConceptId } = useAppState();
 
   return (
     <div className="fb-screen" style={{ maxWidth: 1240, margin: '0 auto' }}>
@@ -21,7 +19,7 @@ export function Concepts() {
             Map your ideas by the value they create and the effort to execute, then move a balanced portfolio into testing. <span style={{ fontStyle: 'italic' }}>Don't put all your eggs in one basket.</span>
           </p>
         </div>
-        <button onClick={() => go('workspace')} className="fb-btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#008ecd', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 15px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+        <button onClick={() => createConcept()} className="fb-btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#008ecd', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 15px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
           <Plus size={14} weight="bold" /> New concept
         </button>
       </div>
@@ -56,20 +54,19 @@ export function Concepts() {
                   </div>
                 </div>
                 {concepts.map(c => {
-                  const Icon = iconMap[c.icon];
                   const top = 100 - c.value;
                   const left = c.effort;
-                  const isTop = c.id === 'easykicks';
+                  const isActive = c.id === activeConceptId;
                   return (
-                    <div key={c.id} title={c.name} style={{
+                    <div key={c.id} title={c.name} onClick={() => setActiveConcept(c.id)} style={{
                       position: 'absolute', top: `${top}%`, left: `${left}%`, transform: 'translate(-50%,-50%)',
                       display: 'flex', alignItems: 'center', gap: 7, background: '#fff',
-                      border: `1.5px solid ${isTop ? '#008ecd' : dotColor[c.accent] + '55'}`, borderRadius: 22,
-                      padding: '4px 10px 4px 5px', boxShadow: isTop ? '0 3px 10px rgba(0,142,205,.18)' : '0 2px 8px rgba(0,0,0,.06)',
-                      cursor: 'grab', whiteSpace: 'nowrap',
+                      border: `1.5px solid ${isActive ? '#008ecd' : dotColor[c.accent] + '55'}`, borderRadius: 22,
+                      padding: '4px 10px 4px 5px', boxShadow: isActive ? '0 3px 10px rgba(0,142,205,.18)' : '0 2px 8px rgba(0,0,0,.06)',
+                      cursor: 'pointer', whiteSpace: 'nowrap',
                     }}>
                       <span style={{ width: 18, height: 18, borderRadius: '50%', background: dotColor[c.accent], display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Icon size={10} weight="fill" color="#fff" />
+                        <Lightbulb size={10} weight="fill" color="#fff" />
                       </span>
                       <span style={{ fontSize: 11, fontWeight: 700 }}>{c.name.split(' ').slice(0, 2).join(' ')}</span>
                     </div>
@@ -92,21 +89,31 @@ export function Concepts() {
             <span style={{ fontSize: 11.5, color: '#9b9c9f', fontWeight: 600 }}>{concepts.length} total</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {concepts.map(c => {
-              const Icon = iconMap[c.icon];
-              return (
-                <div key={c.id} onClick={() => go('workspace')} className="fb-hover fb-hover-tint" style={{ display: 'flex', alignItems: 'center', gap: 11, border: '1px solid #e7eaee', borderRadius: 11, padding: '11px 12px', cursor: 'pointer', opacity: c.shelved ? 0.7 : 1 }}>
-                  <span style={{ width: 30, height: 30, borderRadius: 8, background: accentBg[c.accent], display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
-                    <Icon size={16} color={accentFg[c.accent]} />
-                  </span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700 }}>{c.name}</div>
-                    <div style={{ fontSize: 11, color: '#9b9c9f' }}>{c.statusLine}</div>
-                  </div>
-                  <CaretRight color="#c9cbce" />
+            {concepts.map(c => (
+              <div
+                key={c.id}
+                onClick={() => setActiveConcept(c.id)}
+                className="fb-hover fb-hover-tint fb-note"
+                style={{ display: 'flex', alignItems: 'center', gap: 11, border: '1px solid #e7eaee', borderRadius: 11, padding: '11px 12px', cursor: 'pointer', opacity: c.shelved ? 0.7 : 1 }}
+              >
+                <span style={{ width: 30, height: 30, borderRadius: 8, background: accentBg[c.accent], display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
+                  <Lightbulb size={16} color={accentFg[c.accent]} />
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700 }}>{c.name}</div>
+                  <div style={{ fontSize: 11, color: '#9b9c9f' }}>{c.statusLine}</div>
                 </div>
-              );
-            })}
+                <button
+                  className="fb-note-delete"
+                  onClick={e => { e.stopPropagation(); if (window.confirm(`Delete "${c.name}"? This can't be undone.`)) deleteConcept(c.id); }}
+                  title="Delete concept"
+                  style={{ border: 'none', background: 'transparent', color: '#b0b3b8', cursor: 'pointer', padding: 4, display: 'flex', flex: '0 0 auto', opacity: 0 }}
+                >
+                  <X size={14} />
+                </button>
+                <CaretRight color="#c9cbce" />
+              </div>
+            ))}
           </div>
         </Card>
       </div>

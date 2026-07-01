@@ -31,7 +31,8 @@
     <span>Search docs</span>
     <kbd>/</kbd>
   </div>
-  <a href="https://github.com" class="gh"><i class="ph ph-github-logo" style="font-size:17px"></i></a>
+  <a href="https://scintilla-dashboard.netlify.app/" class="app-link"><i class="ph ph-arrow-square-out" style="font-size:14px"></i> Open app</a>
+  <a href="https://github.com/jpflores-13/experimentation-fieldbook" class="gh"><i class="ph ph-github-logo" style="font-size:17px"></i></a>
 </header>
 
 <div id="top" class="doc-shell">
@@ -77,7 +78,7 @@
     </div>
     <div class="callout note">
       <div class="label"><i class="ph-fill ph-info" style="font-size:15px"></i> Note</div>
-      <p>The four case studies from the book seed the demo data — <b>Easykicks</b> (Nike), <b>Welcome Host</b> (South Western Railway), <b>Career Navigator</b> (PMI) and <b>ER Fast-Track</b> (Whiteriver Hospital). Swap them for your own concepts.</p>
+      <p>The four case studies from the book seed the demo data — <b>Easykicks</b> (Nike), <b>Welcome Host</b> (South Western Railway), <b>Career Navigator</b> (PMI) and <b>ER Fast-Track</b> (Whiteriver Hospital). Concepts are fully yours to manage: use <code>New concept</code> in the top bar or Concepts screen to create one, click any concept to open it, and hover a row in the Concepts list to reveal a delete button.</p>
     </div>
 
     <h2 id="anatomy">Anatomy of the app</h2>
@@ -147,34 +148,37 @@
     <p>This is Step 1's home. The signature component is the <b>Value/Effort Matrix</b>: a 2×2 with a <em>value</em> y-axis and an <em>effort</em> x-axis, split into Quick Wins, Strategic Bets, Fill-ins and Avoid. Each concept is a draggable pill positioned by its value/effort scores; the top-left "quick win" is highlighted. Beside it, an "All concepts" list gives a linear, scannable view — shelved concepts appear dimmed.</p>
 
     <h3 id="workspace">Workspace &amp; the Stepper</h3>
-    <p>Opening a concept enters the guided workflow. A <b>concept header</b> (icon, name, org context) sits above the <b>Stepper</b> — five connected nodes for the five steps. The active node is a blue ring; completed steps show a green check. Clicking a node, or the Back / Continue buttons at the foot of each step, moves you through the flow.</p>
+    <p>Opening a concept enters the guided workflow. A <b>concept header</b> sits above the <b>Stepper</b> — five connected nodes for the five steps. The active node is a blue ring; completed steps show a green check. Clicking a node, or the Back / Continue buttons at the foot of each step, moves you through the flow. The header's name, organization chip, and one-line description are all click-to-edit.</p>
 
     <h3 id="templates">The step templates</h3>
-    <p>Each step renders its own templates as editable, interactive cards. A few highlights:</p>
+    <p>Every box in every step is a real, per-concept record — click any label or value to edit it in place (Enter or click away commits, Escape cancels). A few highlights:</p>
     <ul>
-      <li><b>Concept Snapshot</b> — a labeled grid: rows (<em>For / Who want / We will offer / That provides / Uniquely</em>) by user columns, with the "Uniquely" row tinted to draw the eye to differentiation.</li>
-      <li><b>Surfacing Assumptions</b> — three colour-coded columns for Desirability (blue), Feasibility (teal) and Viability (slate), each holding assumption chips.</li>
-      <li><b>Assumptions → Evidence</b> — a table pairing each assumption with observable evidence, a threshold→aspirational target, and a source.</li>
-      <li><b>Results</b> — threshold-versus-actual bars with a centre tick and PASS / BELOW pills.</li>
+      <li><b>Concept Snapshot &amp; Storyboard</b> — editable rows and user-column labels; click a storyboard frame to toggle it blank (for co-creation) versus filled, and edit its caption underneath.</li>
+      <li><b>Surfacing Assumptions</b> — three colour-coded columns for Desirability (blue), Feasibility (teal) and Viability (slate); add or delete assumption chips per column.</li>
+      <li><b>Assumptions → Evidence</b> — a table pairing each assumption with observable evidence, a threshold→aspirational target, and a source; add or delete rows.</li>
+      <li><b>Test Decision Flow &amp; Test Digest</b> — the three funnel questions drive a live recommendation; a "Use in Test Digest" shortcut fills the recommended test type, and every Test Digest cell is editable. <b>Confirm test</b> logs the current recommendation and digest straight into the Tests tracker as "In field."</li>
+      <li><b>Research Guide &amp; Test Audit Checklist</b> — click any item to check/uncheck it.</li>
+      <li><b>Results</b> — threshold-versus-actual bars with PASS / BELOW pills computed live from editable actual/threshold values; add or delete result rows, and edit the live-status note and the Iterate write-up.</li>
     </ul>
 
     <h3 id="tests">Tests &amp; Progress</h3>
-    <p><b>Tests</b> is a cross-concept tracker — a table of every test with its type, Say/Do character, status and result. <b>Progress</b> renders the book's Progress Tracker as a vertical timeline of the five steps (done, current, upcoming), plus mini progress bars for the other concepts.</p>
+    <p><b>Tests</b> is a cross-concept tracker — a table of every test with its type, Say/Do character, status and result, populated by whatever you've confirmed from Step 3 across all your concepts. <b>Progress</b> renders the active concept's Progress Tracker as a vertical timeline of the five steps (done, current, upcoming), plus mini progress bars for up to three other concepts.</p>
 
     <h3 id="systems">Systems mapping</h3>
-    <p>A dedicated <b>Systems maps</b> workspace helps you understand the <em>system</em> an idea lives in before you test it. A tab switcher holds three tools — the first two are real, editable tools, not illustrations:</p>
+    <p>A dedicated <b>Systems maps</b> workspace helps you understand the <em>system</em> an idea lives in before you test it. A tab switcher holds four tools — the first three are real, editable tools, not illustrations:</p>
     <ul>
       <li><b>System Support Map</b> — a role-centred radial map. Your role sits at the centre, ringed outward by <em>Responsibilities → Needs → Resources → Wishes</em>. "Add to the map" creates a real sticky note on the ring you pick; click a note to rename it, drag to reposition, hover to reveal delete, and click a resource's star to cycle helpful / neutral / unhelpful. Every note persists per concept.</li>
-      <li><b>Feedback Loops</b> — a real causal-loop canvas built on React Flow. "+ Element" adds a node; "+ Link" walks you through picking a source, a target, and a <code>+</code>/<code>−</code> polarity. The canvas auto-detects every closed loop and labels it <b>R</b> (reinforcing, blue) or <b>B</b> (balancing, teal) by counting <code>−</code> links around the cycle — even is reinforcing, odd is balancing. A right-rail panel explains loop directionality (goal, gap, corrective action, delay) alongside the rule the app itself uses.</li>
+      <li><b>Feedback Loops</b> — a real causal-loop canvas built on React Flow. "+ Element" adds a node; "+ Link" walks you through picking a source, a target, and a <code>+</code>/<code>−</code> polarity. Hover an item in the <b>Elements</b> or <b>Links</b> lists on the right to reveal a delete button, or use <b>Clear</b> in the toolbar to wipe the canvas and start over. The canvas auto-detects every closed loop and labels it <b>R</b> (reinforcing, blue) or <b>B</b> (balancing, teal) by counting <code>−</code> links around the cycle — even is reinforcing, odd is balancing. A right-rail panel explains loop directionality (goal, gap, corrective action, delay) alongside the rule the app itself uses.</li>
+      <li><b>5Rs System Diagnostic</b> — a library of named, timestamped assessments of a local system's "as is" state, adapted from USAID's 5Rs Framework. "New diagnostic" opens a blank record; rate each of <b>Results, Roles, Relationships, Rules</b> and <b>Resources</b> 0–5, answer that element's guiding questions (drawn verbatim from the framework's Table 1 — 6/7/5/4/5 questions respectively), and note any gaps. A radar chart summarises all five ratings at a glance. "Mark as final" locks a diagnostic to view-only; "Duplicate" branches a new draft from any entry, final or not.</li>
       <li><b>Systems Archetypes</b> — a gallery of the classic traps (Fixes that Fail, Limits to Growth, Tragedy of the Commons, Shifting the Burden…). Each card opens a detail view with the pattern, a "watch for it when…" cue, where to intervene, and a behaviour-over-time sketch.</li>
     </ul>
     <div class="callout tip">
       <div class="label"><i class="ph-fill ph-lightbulb" style="font-size:15px"></i> Tip</div>
-      <p>The loops and archetypes are linked — the Feedback Loops insight card names the detected R and B loops and jumps straight to the matching archetype so you know where to push.</p>
+      <p>The loops and archetypes are linked — the Feedback Loops insight card names the detected R and B loops and jumps straight to the matching archetype so you know where to push. Support Map, Feedback Loops and the 5Rs Diagnostic can all pop out into their own larger window (top-right of each tool) and export straight to PDF.</p>
     </div>
 
     <h2 id="interactive">Interactive pieces</h2>
-    <p>Four components are genuinely reactive rather than static forms:</p>
+    <p>Almost nothing in Scintilla is a static form — concepts, step templates, and every systems tool read from and write to real, per-record state. A few pieces worth calling out specifically:</p>
     <h3 style="margin-top:22px">Test Decision Flow</h3>
     <p>Three questions funnel down to a single recommended test type. The recommendation panel recomputes live as you answer:</p>
     <pre class="code-block"><span class="kw">if</span>   Q1 == <span class="str">"yes"</span>                         <span class="cmt">// data already exists</span>   → <span class="res">Thought test</span>
@@ -195,16 +199,19 @@
         <div><span class="key">screen</span> — dashboard | concepts | workspace | tests | progress | systems</div>
         <div><span class="key">home</span> — a | b | c <span class="cmt">// dashboard variant</span></div>
         <div><span class="key">step</span> — 1 … 5 <span class="cmt">// active workspace step</span></div>
-        <div><span class="key">q1 q2 q3</span> — decision-flow answers</div>
-        <div><span class="key">saydo</span> — 0 … 100 <span class="cmt">// Say/Do slider</span></div>
-        <div><span class="key">fidelity</span> — 0 … 100 <span class="cmt">// prototype fidelity slider</span></div>
-        <div><span class="key">sysTab</span> — support | loops | archetypes <span class="cmt">// systems map tool</span></div>
+        <div><span class="key">concepts</span> — <span class="cmt">// every concept you've created, renamed or deleted</span></div>
+        <div><span class="key">activeConceptId</span> — <span class="cmt">// which concept the workspace/Progress screens show</span></div>
+        <div><span class="key">workspaceData</span> — per-concept Steps 1–5 <span class="cmt">// {step1…step5}, keyed by concept id</span></div>
+        <div><span class="key">tests</span> — <span class="cmt">// every confirmed test across all concepts</span></div>
+        <div><span class="key">sysTab</span> — support | loops | fiveRs | archetypes <span class="cmt">// systems map tool</span></div>
         <div><span class="key">sysArch</span> — archetype id | null <span class="cmt">// open detail card</span></div>
         <div><span class="key">supportMaps</span> — per-concept support-map notes <span class="cmt">// {id, ring, text, x, y, star?}</span></div>
         <div><span class="key">loopGraphs</span> — per-concept loop graphs <span class="cmt">// {nodes[], links[]}</span></div>
+        <div><span class="key">fiveRs</span> — the 5Rs diagnostic library <span class="cmt">// {id, name, status, elements: {rating, answers[], gapNote}}</span></div>
+        <div><span class="key">activeFiveRId</span> — id | null <span class="cmt">// open diagnostic, or the library list</span></div>
       </div>
     </div>
-    <p>Concepts, assumptions, tests, and each systems map are modelled as record collections, so the seeded case-study data can be replaced by real, user-created records without touching the UI.</p>
+    <p>Concepts, per-concept workspace data, tests, and each systems map (support maps, loop graphs, and 5Rs diagnostics) are modelled as record collections, so the seeded case-study data lives side by side with real, user-created records — nothing has to be swapped out in the UI.</p>
 
     <h2 id="theming">Theming tokens</h2>
     <p>The palette and type are lifted straight from the printed field book.</p>

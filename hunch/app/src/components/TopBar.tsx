@@ -2,18 +2,20 @@ import { MagnifyingGlass, Bell, Plus, Printer } from '@phosphor-icons/react';
 import { useAppState } from '../state/AppState';
 import type { Screen } from '../types';
 
-const titles: Record<Screen, [string, string]> = {
+const titles: Record<Exclude<Screen, 'workspace'>, [string, string]> = {
   dashboard: ['Dashboard', 'Your experimentation portfolio at a glance'],
   concepts: ['Concepts', 'Prioritize and frame your testable ideas — Step 1'],
-  workspace: ['Guided Workflow', 'Easykicks · move through the five steps'],
   tests: ['Tests', 'Every test across your concepts — Test Digest & results'],
   progress: ['Progress Tracker', 'Milestones across all five steps'],
   systems: ['Systems maps', 'Map the system around your idea — supports, loops & archetypes'],
 };
 
 export function TopBar() {
-  const { screen, go } = useAppState();
-  const [title, sub] = titles[screen];
+  const { screen, concepts, activeConceptId, createConcept } = useAppState();
+  const active = concepts.find(c => c.id === activeConceptId);
+  const [title, sub] = screen === 'workspace'
+    ? ['Guided Workflow', active ? `${active.name} · move through the five steps` : 'Move through the five steps']
+    : titles[screen];
 
   return (
     <header style={{ flex: '0 0 auto', height: 64, background: '#fff', borderBottom: '1px solid #e3e6ea', display: 'flex', alignItems: 'center', gap: 16, padding: '0 26px' }}>
@@ -38,7 +40,7 @@ export function TopBar() {
       </button>
       <button
         className="fb-btn-primary"
-        onClick={() => go('workspace')}
+        onClick={() => createConcept()}
         style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#008ecd', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 15px', fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,142,205,.35)', whiteSpace: 'nowrap' }}
       >
         <Plus size={15} weight="bold" /> New concept

@@ -6,6 +6,7 @@ import { Workspace } from './screens/Workspace';
 import { Tests } from './screens/Tests';
 import { Progress } from './screens/Progress';
 import { Systems } from './screens/Systems';
+import { Popout } from './screens/Popout';
 
 function Screens() {
   const { screen } = useAppState();
@@ -22,9 +23,10 @@ function Screens() {
 }
 
 export default function App() {
+  const popout = new URLSearchParams(window.location.search).get('popout');
   return (
     <AppStateProvider>
-      <Screens />
+      {popout ? <Popout tool={popout} /> : <Screens />}
     </AppStateProvider>
   );
 }

@@ -1,19 +1,21 @@
 import { useAppState } from '../state/AppState';
-import { tests } from '../data/seed';
 import { Card } from '../components/ui';
 
 const statusColor: Record<string, string> = { blue: '#008ecd', muted: '#83878f' };
 const resultColor: Record<string, string> = { teal: '#25826f', muted: '#9b9c9f', warn: '#c25a48' };
 
 export function Tests() {
-  const { go } = useAppState();
+  const { go, tests } = useAppState();
+  const inField = tests.filter(t => t.status === 'In field').length;
+  const passed = tests.filter(t => t.resultColor === 'teal').length;
+  const pivots = tests.filter(t => t.resultColor === 'warn').length;
   return (
     <div className="fb-screen" style={{ maxWidth: 1180, margin: '0 auto' }}>
       <div className="fb-grid4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 20 }}>
-        <Card style={{ padding: '15px 17px' }}><div style={{ fontSize: 12, fontWeight: 600, color: '#83878f', marginBottom: 8 }}>Tests run</div><div style={{ fontSize: 24, fontWeight: 700 }}>11</div></Card>
-        <Card style={{ padding: '15px 17px' }}><div style={{ fontSize: 12, fontWeight: 600, color: '#83878f', marginBottom: 8 }}>In field now</div><div style={{ fontSize: 24, fontWeight: 700, color: '#008ecd' }}>3</div></Card>
-        <Card style={{ padding: '15px 17px' }}><div style={{ fontSize: 12, fontWeight: 600, color: '#83878f', marginBottom: 8 }}>Assumptions passed</div><div style={{ fontSize: 24, fontWeight: 700, color: '#2ea38e' }}>18</div></Card>
-        <Card style={{ padding: '15px 17px' }}><div style={{ fontSize: 12, fontWeight: 600, color: '#83878f', marginBottom: 8 }}>Pivots triggered</div><div style={{ fontSize: 24, fontWeight: 700 }}>4</div></Card>
+        <Card style={{ padding: '15px 17px' }}><div style={{ fontSize: 12, fontWeight: 600, color: '#83878f', marginBottom: 8 }}>Tests run</div><div style={{ fontSize: 24, fontWeight: 700 }}>{tests.length}</div></Card>
+        <Card style={{ padding: '15px 17px' }}><div style={{ fontSize: 12, fontWeight: 600, color: '#83878f', marginBottom: 8 }}>In field now</div><div style={{ fontSize: 24, fontWeight: 700, color: '#008ecd' }}>{inField}</div></Card>
+        <Card style={{ padding: '15px 17px' }}><div style={{ fontSize: 12, fontWeight: 600, color: '#83878f', marginBottom: 8 }}>Passing results</div><div style={{ fontSize: 24, fontWeight: 700, color: '#2ea38e' }}>{passed}</div></Card>
+        <Card style={{ padding: '15px 17px' }}><div style={{ fontSize: 12, fontWeight: 600, color: '#83878f', marginBottom: 8 }}>Pivots triggered</div><div style={{ fontSize: 24, fontWeight: 700 }}>{pivots}</div></Card>
       </div>
 
       <Card style={{ overflow: 'hidden', overflowX: 'auto', borderRadius: 16 }}>

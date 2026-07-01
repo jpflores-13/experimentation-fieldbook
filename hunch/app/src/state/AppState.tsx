@@ -1,6 +1,12 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import type { Screen, HomeVariant, Step, SysTab, SupportMap, SupportNote, Ring, StarRating, LoopGraph, Polarity } from '../types';
+import type {
+  Screen, HomeVariant, Step, SysTab, SupportMap, SupportNote, Ring, StarRating, LoopGraph, Polarity,
+  Concept, TestRow, WorkspaceData, AssumptionCategory, ChecklistItem, FiveRDiagnostic, FiveRElement,
+} from '../types';
 import { defaultSupportMaps, defaultLoopGraphs } from '../data/systemsSeed';
+import { concepts as seedConcepts, seedTests } from '../data/seed';
+import { defaultWorkspaceDataByConcept, emptyWorkspaceData } from '../data/workspaceSeed';
+import { emptyFiveRDiagnostic } from '../data/fiveRsQuestions';
 
 const STORAGE_KEY = 'fb_app_state_v1';
 
@@ -8,30 +14,32 @@ export interface PersistedState {
   screen: Screen;
   home: HomeVariant;
   step: Step;
-  q1: 'yes' | 'no' | null;
-  q2: 'component' | 'whole' | null;
-  q3: 'say' | 'do' | null;
-  saydo: number;
-  fidelity: number;
   sysTab: SysTab;
   sysArch: string | null;
   supportMaps: Record<string, SupportMap>;
   loopGraphs: Record<string, LoopGraph>;
+  concepts: Concept[];
+  activeConceptId: string;
+  workspaceData: Record<string, WorkspaceData>;
+  tests: TestRow[];
+  fiveRs: FiveRDiagnostic[];
+  activeFiveRId: string | null;
 }
 
 const defaultState: PersistedState = {
   screen: 'dashboard',
   home: 'a',
   step: 1,
-  q1: null,
-  q2: null,
-  q3: null,
-  saydo: 64,
-  fidelity: 42,
   sysTab: 'support',
   sysArch: null,
   supportMaps: defaultSupportMaps,
   loopGraphs: defaultLoopGraphs,
+  concepts: seedConcepts,
+  activeConceptId: 'easykicks',
+  workspaceData: defaultWorkspaceDataByConcept,
+  tests: seedTests,
+  fiveRs: [],
+  activeFiveRId: null,
 };
 
 function loadInitial(): PersistedState {
@@ -66,15 +74,14 @@ const ringDefaultLabel: Record<Exclude<Ring, 'role'>, string> = {
   wish: 'New wish',
 };
 
+function newId(prefix: string) {
+  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+}
+
 interface AppStateValue extends PersistedState {
   go: (screen: Screen) => void;
   setHome: (home: HomeVariant) => void;
   setStep: (step: Step) => void;
-  setQ1: (v: 'yes' | 'no') => void;
-  setQ2: (v: 'component' | 'whole') => void;
-  setQ3: (v: 'say' | 'do') => void;
-  setSaydo: (v: number) => void;
-  setFidelity: (v: number) => void;
   setSysTab: (t: SysTab) => void;
   setSysArch: (id: string | null) => void;
   addSupportNote: (mapId: string, ring: Exclude<Ring, 'role'>) => string;
@@ -88,6 +95,60 @@ interface AppStateValue extends PersistedState {
   deleteLoopNode: (graphId: string, nodeId: string) => void;
   addLoopLink: (graphId: string, from: string, to: string, polarity: Polarity) => string;
   deleteLoopLink: (graphId: string, linkId: string) => void;
+  clearLoopGraph: (graphId: string) => void;
+
+  // Concepts
+  setActiveConcept: (id: string) => void;
+  createConcept: () => string;
+  deleteConcept: (id: string) => void;
+  updateConcept: (id: string, patch: Partial<Pick<Concept, 'name' | 'org' | 'description' | 'subtitle'>>) => void;
+
+  // Step 1
+  updateSnapshotUserLabel: (conceptId: string, which: 'user1Label' | 'user2Label', value: string) => void;
+  updateSnapshotField: (conceptId: string, rowId: string, col: 'u1' | 'u2', value: string) => void;
+  updateStoryboardCaption: (conceptId: string, frameId: string, value: string) => void;
+  toggleStoryboardBlank: (conceptId: string, frameId: string) => void;
+
+  // Step 2
+  addAssumption: (conceptId: string, category: AssumptionCategory) => void;
+  updateAssumption: (conceptId: string, category: AssumptionCategory, itemId: string, text: string) => void;
+  deleteAssumption: (conceptId: string, category: AssumptionCategory, itemId: string) => void;
+  addEvidenceRow: (conceptId: string) => void;
+  updateEvidenceField: (conceptId: string, rowId: string, field: 'assumption' | 'evidence' | 'threshold' | 'aspirational' | 'source', value: string) => void;
+  deleteEvidenceRow: (conceptId: string, rowId: string) => void;
+
+  // Step 3
+  setConceptQ1: (conceptId: string, v: 'yes' | 'no') => void;
+  setConceptQ2: (conceptId: string, v: 'component' | 'whole') => void;
+  setConceptQ3: (conceptId: string, v: 'say' | 'do') => void;
+  setConceptSaydo: (conceptId: string, v: number) => void;
+  updateDigestField: (conceptId: string, field: keyof WorkspaceData['step3']['digest'], value: string) => void;
+  confirmTest: (conceptId: string) => void;
+
+  // Step 4
+  setConceptFidelity: (conceptId: string, v: number) => void;
+  selectFormat: (conceptId: string, formatId: string) => void;
+  toggleResearchGuideItem: (conceptId: string, itemId: string) => void;
+
+  // Step 5
+  toggleAuditItem: (conceptId: string, itemId: string) => void;
+  updateResultField: (conceptId: string, rowId: string, field: 'label' | 'actual' | 'threshold', value: string | number) => void;
+  addResultRow: (conceptId: string) => void;
+  deleteResultRow: (conceptId: string, rowId: string) => void;
+  updateIterateNote: (conceptId: string, value: string) => void;
+  updateLiveStatus: (conceptId: string, label: string, note: string) => void;
+
+  // 5Rs System Diagnostic
+  setActiveFiveR: (id: string | null) => void;
+  createFiveRDiagnostic: () => string;
+  deleteFiveRDiagnostic: (id: string) => void;
+  duplicateFiveRDiagnostic: (id: string) => string;
+  renameFiveRDiagnostic: (id: string, name: string) => void;
+  updateFiveRBoundary: (id: string, value: string) => void;
+  setFiveRStatus: (id: string, status: 'draft' | 'final') => void;
+  setFiveRRating: (id: string, element: FiveRElement, rating: number) => void;
+  updateFiveRAnswer: (id: string, element: FiveRElement, questionIndex: number, value: string) => void;
+  updateFiveRGapNote: (id: string, element: FiveRElement, value: string) => void;
 }
 
 const AppStateContext = createContext<AppStateValue | null>(null);
@@ -102,6 +163,21 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       /* storage unavailable */
     }
   }, [state]);
+
+  // Pop-out windows (Support Map / Feedback Loops) share this tab's
+  // localStorage — pick up edits made in the other window without a reload.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== STORAGE_KEY || !e.newValue) return;
+      try {
+        setState(s => ({ ...s, ...JSON.parse(e.newValue!) }));
+      } catch {
+        /* ignore malformed storage */
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   const patch = (p: Partial<PersistedState>) => setState(s => ({ ...s, ...p }));
 
@@ -125,16 +201,23 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const updateWorkspace = (conceptId: string, fn: (w: WorkspaceData) => WorkspaceData) => {
+    setState(s => {
+      const current = s.workspaceData[conceptId];
+      if (!current) return s;
+      return { ...s, workspaceData: { ...s.workspaceData, [conceptId]: fn(current) } };
+    });
+  };
+
+  const updateFiveR = (id: string, fn: (d: FiveRDiagnostic) => FiveRDiagnostic) => {
+    setState(s => ({ ...s, fiveRs: s.fiveRs.map(d => (d.id === id ? fn(d) : d)) }));
+  };
+
   const value: AppStateValue = {
     ...state,
     go: (screen) => patch({ screen }),
     setHome: (home) => patch({ home }),
     setStep: (step) => patch({ step }),
-    setQ1: (q1) => patch({ q1 }),
-    setQ2: (q2) => patch({ q2 }),
-    setQ3: (q3) => patch({ q3 }),
-    setSaydo: (saydo) => patch({ saydo }),
-    setFidelity: (fidelity) => patch({ fidelity }),
     setSysTab: (sysTab) => patch({ sysTab, sysArch: null }),
     setSysArch: (sysArch) => patch({ sysArch }),
     addSupportNote: (mapId, ring) => {
@@ -194,6 +277,235 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     deleteLoopLink: (graphId, linkId) => {
       updateGraph(graphId, g => ({ ...g, links: g.links.filter(l => l.id !== linkId) }));
     },
+    clearLoopGraph: (graphId) => {
+      updateGraph(graphId, () => ({ nodes: [], links: [] }));
+    },
+
+    // ---- Concepts ----
+    setActiveConcept: (id) => patch({ activeConceptId: id, step: 1 }),
+    createConcept: () => {
+      const id = newId('concept');
+      const concept: Concept = {
+        id, name: 'New concept', subtitle: 'Untitled · add an organization', description: '', org: '',
+        accent: 'blue', step: 1, stepLabel: 'Step 1 · Frame',
+        segments: [0, 0, 0, 0, 0], value: 50, effort: 50, quadrantLabel: 'Quick win', statusLine: 'Just started',
+      };
+      setState(s => ({
+        ...s,
+        concepts: [...s.concepts, concept],
+        workspaceData: { ...s.workspaceData, [id]: emptyWorkspaceData() },
+        activeConceptId: id,
+        screen: 'workspace',
+        step: 1,
+      }));
+      return id;
+    },
+    deleteConcept: (id) => {
+      setState(s => {
+        const concepts = s.concepts.filter(c => c.id !== id);
+        const workspaceData = { ...s.workspaceData };
+        delete workspaceData[id];
+        const activeConceptId = s.activeConceptId === id ? (concepts[0]?.id ?? '') : s.activeConceptId;
+        return { ...s, concepts, workspaceData, activeConceptId };
+      });
+    },
+    updateConcept: (id, patchFields) => {
+      setState(s => ({ ...s, concepts: s.concepts.map(c => (c.id === id ? { ...c, ...patchFields } : c)) }));
+    },
+
+    // ---- Step 1 ----
+    updateSnapshotUserLabel: (conceptId, which, value) => {
+      updateWorkspace(conceptId, w => ({ ...w, step1: { ...w.step1, [which]: value } }));
+    },
+    updateSnapshotField: (conceptId, rowId, col, value) => {
+      updateWorkspace(conceptId, w => ({
+        ...w,
+        step1: { ...w.step1, snapshot: w.step1.snapshot.map(row => (row.id === rowId ? { ...row, [col]: value } : row)) },
+      }));
+    },
+    updateStoryboardCaption: (conceptId, frameId, value) => {
+      updateWorkspace(conceptId, w => ({
+        ...w,
+        step1: { ...w.step1, storyboard: w.step1.storyboard.map(f => (f.id === frameId ? { ...f, caption: value } : f)) },
+      }));
+    },
+    toggleStoryboardBlank: (conceptId, frameId) => {
+      updateWorkspace(conceptId, w => ({
+        ...w,
+        step1: { ...w.step1, storyboard: w.step1.storyboard.map(f => (f.id === frameId ? { ...f, blank: !f.blank } : f)) },
+      }));
+    },
+
+    // ---- Step 2 ----
+    addAssumption: (conceptId, category) => {
+      updateWorkspace(conceptId, w => ({
+        ...w,
+        step2: {
+          ...w.step2,
+          assumptions: {
+            ...w.step2.assumptions,
+            [category]: [...w.step2.assumptions[category], { id: newId('assum'), text: 'New assumption' }],
+          },
+        },
+      }));
+    },
+    updateAssumption: (conceptId, category, itemId, text) => {
+      updateWorkspace(conceptId, w => ({
+        ...w,
+        step2: {
+          ...w.step2,
+          assumptions: {
+            ...w.step2.assumptions,
+            [category]: w.step2.assumptions[category].map(item => (item.id === itemId ? { ...item, text } : item)),
+          },
+        },
+      }));
+    },
+    deleteAssumption: (conceptId, category, itemId) => {
+      updateWorkspace(conceptId, w => ({
+        ...w,
+        step2: {
+          ...w.step2,
+          assumptions: {
+            ...w.step2.assumptions,
+            [category]: w.step2.assumptions[category].filter(item => item.id !== itemId),
+          },
+        },
+      }));
+    },
+    addEvidenceRow: (conceptId) => {
+      updateWorkspace(conceptId, w => ({
+        ...w,
+        step2: {
+          ...w.step2,
+          evidence: [...w.step2.evidence, { id: newId('evid'), assumption: 'New assumption', evidence: '', threshold: '', aspirational: '', source: '' }],
+        },
+      }));
+    },
+    updateEvidenceField: (conceptId, rowId, field, value) => {
+      updateWorkspace(conceptId, w => ({
+        ...w,
+        step2: { ...w.step2, evidence: w.step2.evidence.map(row => (row.id === rowId ? { ...row, [field]: value } : row)) },
+      }));
+    },
+    deleteEvidenceRow: (conceptId, rowId) => {
+      updateWorkspace(conceptId, w => ({ ...w, step2: { ...w.step2, evidence: w.step2.evidence.filter(row => row.id !== rowId) } }));
+    },
+
+    // ---- Step 3 ----
+    setConceptQ1: (conceptId, v) => updateWorkspace(conceptId, w => ({ ...w, step3: { ...w.step3, q1: v } })),
+    setConceptQ2: (conceptId, v) => updateWorkspace(conceptId, w => ({ ...w, step3: { ...w.step3, q2: v } })),
+    setConceptQ3: (conceptId, v) => updateWorkspace(conceptId, w => ({ ...w, step3: { ...w.step3, q3: v } })),
+    setConceptSaydo: (conceptId, v) => updateWorkspace(conceptId, w => ({ ...w, step3: { ...w.step3, saydo: v } })),
+    updateDigestField: (conceptId, field, value) => {
+      updateWorkspace(conceptId, w => ({ ...w, step3: { ...w.step3, digest: { ...w.step3.digest, [field]: value } } }));
+    },
+    confirmTest: (conceptId) => {
+      const concept = state.concepts.find(c => c.id === conceptId);
+      const workspace = state.workspaceData[conceptId];
+      if (!concept || !workspace) return;
+      const rec = recommendation(workspace.step3.q1, workspace.step3.q2, workspace.step3.q3);
+      const testType = rec?.name ?? (workspace.step3.digest.testType || 'Test');
+      const sayDo = workspace.step3.q3 === 'say' ? 'Say' : workspace.step3.q3 === 'do' ? 'Do' : 'Say→Do';
+      const row: TestRow = {
+        id: newId('test'), concept: `${concept.name} · ${testType}`, testType, sayDo,
+        status: 'In field', statusColor: 'blue', result: 'Awaiting results', resultColor: 'muted',
+      };
+      setState(s => ({ ...s, tests: [row, ...s.tests] }));
+    },
+
+    // ---- Step 4 ----
+    setConceptFidelity: (conceptId, v) => updateWorkspace(conceptId, w => ({ ...w, step4: { ...w.step4, fidelity: v } })),
+    selectFormat: (conceptId, formatId) => updateWorkspace(conceptId, w => ({ ...w, step4: { ...w.step4, selectedFormat: formatId } })),
+    toggleResearchGuideItem: (conceptId, itemId) => {
+      updateWorkspace(conceptId, w => ({
+        ...w,
+        step4: { ...w.step4, researchGuide: w.step4.researchGuide.map((it: ChecklistItem) => (it.id === itemId ? { ...it, done: !it.done } : it)) },
+      }));
+    },
+
+    // ---- Step 5 ----
+    toggleAuditItem: (conceptId, itemId) => {
+      updateWorkspace(conceptId, w => ({
+        ...w,
+        step5: { ...w.step5, audit: w.step5.audit.map((it: ChecklistItem) => (it.id === itemId ? { ...it, done: !it.done } : it)) },
+      }));
+    },
+    updateResultField: (conceptId, rowId, field, value) => {
+      updateWorkspace(conceptId, w => ({
+        ...w,
+        step5: { ...w.step5, results: w.step5.results.map(r => (r.id === rowId ? { ...r, [field]: value } : r)) },
+      }));
+    },
+    addResultRow: (conceptId) => {
+      updateWorkspace(conceptId, w => ({
+        ...w,
+        step5: { ...w.step5, results: [...w.step5.results, { id: newId('res'), label: 'New metric', actual: 0, threshold: 0, comparison: 'gte', unit: '%', vsLabel: '' }] },
+      }));
+    },
+    deleteResultRow: (conceptId, rowId) => {
+      updateWorkspace(conceptId, w => ({ ...w, step5: { ...w.step5, results: w.step5.results.filter(r => r.id !== rowId) } }));
+    },
+    updateIterateNote: (conceptId, value) => {
+      updateWorkspace(conceptId, w => ({ ...w, step5: { ...w.step5, iterateNote: value } }));
+    },
+    updateLiveStatus: (conceptId, label, note) => {
+      updateWorkspace(conceptId, w => ({ ...w, step5: { ...w.step5, liveStatusLabel: label, liveStatusNote: note } }));
+    },
+
+    // ---- 5Rs System Diagnostic ----
+    setActiveFiveR: (id) => patch({ activeFiveRId: id }),
+    createFiveRDiagnostic: () => {
+      const diag = emptyFiveRDiagnostic();
+      setState(s => ({ ...s, fiveRs: [diag, ...s.fiveRs], activeFiveRId: diag.id }));
+      return diag.id;
+    },
+    deleteFiveRDiagnostic: (id) => {
+      setState(s => {
+        const fiveRs = s.fiveRs.filter(d => d.id !== id);
+        const activeFiveRId = s.activeFiveRId === id ? (fiveRs[0]?.id ?? null) : s.activeFiveRId;
+        return { ...s, fiveRs, activeFiveRId };
+      });
+    },
+    duplicateFiveRDiagnostic: (id) => {
+      const source = state.fiveRs.find(d => d.id === id);
+      if (!source) return '';
+      const now = new Date().toISOString();
+      const copy: FiveRDiagnostic = {
+        ...source,
+        id: newId('5r'),
+        name: `${source.name} (copy)`,
+        status: 'draft',
+        createdAt: now,
+        updatedAt: now,
+      };
+      setState(s => ({ ...s, fiveRs: [copy, ...s.fiveRs], activeFiveRId: copy.id }));
+      return copy.id;
+    },
+    renameFiveRDiagnostic: (id, name) => {
+      const trimmed = name.trim();
+      if (!trimmed) return;
+      updateFiveR(id, d => ({ ...d, name: trimmed, updatedAt: new Date().toISOString() }));
+    },
+    updateFiveRBoundary: (id, value) => {
+      updateFiveR(id, d => ({ ...d, systemBoundary: value, updatedAt: new Date().toISOString() }));
+    },
+    setFiveRStatus: (id, status) => {
+      updateFiveR(id, d => ({ ...d, status, updatedAt: new Date().toISOString() }));
+    },
+    setFiveRRating: (id, element, rating) => {
+      updateFiveR(id, d => ({ ...d, elements: { ...d.elements, [element]: { ...d.elements[element], rating } }, updatedAt: new Date().toISOString() }));
+    },
+    updateFiveRAnswer: (id, element, questionIndex, value) => {
+      updateFiveR(id, d => {
+        const answers = d.elements[element].answers.slice();
+        answers[questionIndex] = value;
+        return { ...d, elements: { ...d.elements, [element]: { ...d.elements[element], answers } }, updatedAt: new Date().toISOString() };
+      });
+    },
+    updateFiveRGapNote: (id, element, value) => {
+      updateFiveR(id, d => ({ ...d, elements: { ...d.elements, [element]: { ...d.elements[element], gapNote: value } }, updatedAt: new Date().toISOString() }));
+    },
   };
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;
@@ -205,7 +517,7 @@ export function useAppState() {
   return ctx;
 }
 
-export function recommendation(q1: PersistedState['q1'], q2: PersistedState['q2'], q3: PersistedState['q3']) {
+export function recommendation(q1: 'yes' | 'no' | null, q2: 'component' | 'whole' | null, q3: 'say' | 'do' | null) {
   if (q1 === 'yes') {
     return { name: 'Thought test', note: 'Existing data can address this assumption — analyze before going to the field.', icon: 'Brain' as const };
   }

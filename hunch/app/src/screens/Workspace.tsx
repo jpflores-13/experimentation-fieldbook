@@ -1,13 +1,15 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode, type CSSProperties } from 'react';
 import {
-  SneakerMove, ArrowLeft, ArrowRight, Image, PlusCircle, Heart, Wrench, ChartLineUp, Check,
-  Cards, ImageSquare, Package, DeviceMobile, RocketLaunch, Broadcast, ArrowsClockwise, Brain, ChatsCircle, Storefront, CursorClick, Flask,
+  Lightbulb, ArrowLeft, ArrowRight, Image, PlusCircle, Heart, Wrench, ChartLineUp, Check, X,
+  Cards, ImageSquare, Package, DeviceMobile, RocketLaunch, Broadcast, Brain, ChatsCircle, Storefront, CursorClick, Flask,
 } from '@phosphor-icons/react';
 import { useAppState, recommendation } from '../state/AppState';
-import type { Step as StepNum } from '../types';
+import type { Step as StepNum, SnapshotRow, AssumptionCategory } from '../types';
 import { Card } from '../components/ui';
+import { formatOptions } from '../data/workspaceSeed';
 
 const iconMap: Record<string, React.ElementType> = { Brain, ChatsCircle, Storefront, CursorClick, Flask };
+const formatIconMap: Record<string, React.ElementType> = { Cards, ImageSquare, Package, DeviceMobile, RocketLaunch };
 
 const steps: { n: StepNum; label: string }[] = [
   { n: 1, label: 'Frame' },
@@ -18,7 +20,23 @@ const steps: { n: StepNum; label: string }[] = [
 ];
 
 export function Workspace() {
-  const { step, setStep } = useAppState();
+  const { step, setStep, concepts, activeConceptId, createConcept } = useAppState();
+  const concept = concepts.find(c => c.id === activeConceptId);
+
+  if (!concept) {
+    return (
+      <div className="fb-screen" style={{ maxWidth: 560, margin: '90px auto 0', textAlign: 'center', color: '#83878f' }}>
+        <p style={{ marginBottom: 16, fontSize: 13.5 }}>No concepts yet — create one to start the guided workflow.</p>
+        <button
+          onClick={() => createConcept()}
+          className="fb-btn-primary"
+          style={{ background: '#008ecd', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+        >
+          Create your first concept
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="fb-screen" style={{ maxWidth: 1180, margin: '0 auto' }}>
@@ -69,18 +87,121 @@ export function Workspace() {
   );
 }
 
+// ---- Inline click-to-edit primitives ------------------------------------
+
+function EditableText({ value, onCommit, placeholder, style }: {
+  value: string; onCommit: (v: string) => void; placeholder?: string; style?: CSSProperties;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const commit = () => { onCommit(draft); setEditing(false); };
+
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        value={draft}
+        onChange={e => setDraft(e.target.value)}
+        onFocus={e => e.target.select()}
+        onBlur={commit}
+        onKeyDown={e => {
+          if (e.key === 'Enter') commit();
+          if (e.key === 'Escape') { setDraft(value); setEditing(false); }
+        }}
+        style={{ font: 'inherit', color: 'inherit', background: '#fff', border: '1.5px solid #9fd0ea', borderRadius: 6, padding: '2px 6px', outline: 'none', minWidth: 0, ...style }}
+      />
+    );
+  }
+  return (
+    <span onClick={() => { setDraft(value); setEditing(true); }} style={{ cursor: 'text', ...style }}>
+      {value ? value : <span style={{ color: '#b0b3b8', fontStyle: 'italic' }}>{placeholder ?? 'click to add…'}</span>}
+    </span>
+  );
+}
+
+function EditableArea({ value, onCommit, placeholder, rows = 2, style }: {
+  value: string; onCommit: (v: string) => void; placeholder?: string; rows?: number; style?: CSSProperties;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const commit = () => { onCommit(draft); setEditing(false); };
+
+  if (editing) {
+    return (
+      <textarea
+        autoFocus
+        rows={rows}
+        value={draft}
+        onChange={e => setDraft(e.target.value)}
+        onFocus={e => e.target.select()}
+        onBlur={commit}
+        onKeyDown={e => { if (e.key === 'Escape') { setDraft(value); setEditing(false); } }}
+        style={{ font: 'inherit', color: 'inherit', lineHeight: 'inherit', background: '#fff', border: '1.5px solid #9fd0ea', borderRadius: 6, padding: 6, outline: 'none', width: '100%', resize: 'vertical', ...style }}
+      />
+    );
+  }
+  return (
+    <div onClick={() => { setDraft(value); setEditing(true); }} style={{ cursor: 'text', minHeight: 18, ...style }}>
+      {value ? value : <span style={{ color: '#b0b3b8', fontStyle: 'italic' }}>{placeholder ?? 'click to add…'}</span>}
+    </div>
+  );
+}
+
+function AddRowButton({ label, onClick, style }: { label: string; onClick: () => void; style?: CSSProperties }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{ background: '#f6f8fa', border: '1px dashed #cdd6dc', borderRadius: 9, padding: '9px 11px', fontSize: 11.5, color: '#9b9c9f', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', width: '100%', textAlign: 'left', fontFamily: 'inherit', ...style }}
+    >
+      <PlusCircle size={12} /> {label}
+    </button>
+  );
+}
+
+function RowDelete({ onClick, style }: { onClick: () => void; style?: CSSProperties }) {
+  return (
+    <button
+      className="fb-note-delete"
+      onClick={e => { e.stopPropagation(); onClick(); }}
+      title="Delete"
+      style={{ border: 'none', background: 'transparent', color: '#b0b3b8', cursor: 'pointer', padding: 4, display: 'flex', flex: '0 0 auto', opacity: 0, ...style }}
+    >
+      <X size={13} />
+    </button>
+  );
+}
+
 function ConceptHeader() {
+  const { concepts, activeConceptId, updateConcept } = useAppState();
+  const concept = concepts.find(c => c.id === activeConceptId);
+  if (!concept) return null;
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 13, marginBottom: 18, flexWrap: 'wrap' }}>
       <span style={{ width: 44, height: 44, borderRadius: 11, background: '#eef7fc', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
-        <SneakerMove size={23} weight="fill" color="#008ecd" />
+        <Lightbulb size={23} weight="fill" color="#008ecd" />
       </span>
       <div style={{ flex: 1, minWidth: 180 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
-          <h2 style={{ margin: 0, fontSize: 19, fontWeight: 700, letterSpacing: '-.01em' }}>Easykicks subscription</h2>
-          <span style={{ fontSize: 11, fontWeight: 600, color: '#25826f', background: '#eef6f3', border: '1px solid #cfe9e2', padding: '2px 9px', borderRadius: 20 }}>Recycling component</span>
+          <EditableText
+            value={concept.name}
+            onCommit={v => updateConcept(concept.id, { name: v.trim() || concept.name })}
+            placeholder="Concept name"
+            style={{ fontSize: 19, fontWeight: 700, letterSpacing: '-.01em' }}
+          />
+          <EditableText
+            value={concept.org}
+            onCommit={v => updateConcept(concept.id, { org: v })}
+            placeholder="add organization"
+            style={{ fontSize: 11, fontWeight: 600, color: '#25826f', background: '#eef6f3', border: '1px solid #cfe9e2', padding: '2px 9px', borderRadius: 20 }}
+          />
         </div>
-        <div style={{ fontSize: 12.5, color: '#83878f' }}>Nike · testing whether parents will return old shoes</div>
+        <EditableText
+          value={concept.description}
+          onCommit={v => updateConcept(concept.id, { description: v })}
+          placeholder="add a one-line description of what you're testing…"
+          style={{ fontSize: 12.5, color: '#83878f' }}
+        />
       </div>
     </div>
   );
@@ -96,6 +217,9 @@ function PrintStepBanner({ n, label }: { n: number; label: string }) {
 }
 
 function PrintCoverPage() {
+  const { concepts, activeConceptId } = useAppState();
+  const concept = concepts.find(c => c.id === activeConceptId);
+  const metaLine = [concept?.org, concept?.description].filter(Boolean).join(' · ');
   return (
     <div className="fb-print-page">
       <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 28 }}>
@@ -103,8 +227,8 @@ function PrintCoverPage() {
         <span style={{ fontFamily: "'Work Sans',sans-serif", fontSize: 15, fontWeight: 800, color: '#2c2e35', letterSpacing: '-.03em' }}>scintilla</span>
         <span style={{ fontSize: 11, fontWeight: 700, color: '#0079b0', letterSpacing: '.05em', textTransform: 'uppercase' }}>· Experimentation workbook</span>
       </div>
-      <h1 style={{ margin: '0 0 6px', fontSize: 26, fontWeight: 700, letterSpacing: '-.01em' }}>Easykicks subscription</h1>
-      <div style={{ fontSize: 13, color: '#5b5f67' }}>Nike · Recycling component · testing whether parents will return old shoes</div>
+      <h1 style={{ margin: '0 0 6px', fontSize: 26, fontWeight: 700, letterSpacing: '-.01em' }}>{concept?.name ?? 'Untitled concept'}</h1>
+      <div style={{ fontSize: 13, color: '#5b5f67' }}>{metaLine}</div>
       <div style={{ fontSize: 11, color: '#9b9c9f', marginTop: 18 }}>Steps 1–5, filled in {new Date().toLocaleDateString()}.</div>
     </div>
   );
@@ -137,38 +261,58 @@ function SectionHeading({ title, note }: { title: string; note: string }) {
   );
 }
 
-function CardHeading({ title, tag }: { title: string; tag: string }) {
+function CardHeading({ title, tag }: { title: string; tag: ReactNode }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 10, flexWrap: 'wrap' }}>
       <h4 style={{ margin: 0, fontSize: 13.5, fontWeight: 700 }}>{title}</h4>
       <span style={{ fontSize: 11, color: '#9b9c9f' }}>{tag}</span>
     </div>
   );
 }
 
-function RowGroup({ label, sub, u1, u2 }: { label: string; sub: string; u1: ReactNode; u2: ReactNode }) {
+function SnapshotRowView({ row, onChangeU1, onChangeU2 }: { row: SnapshotRow; onChangeU1: (v: string) => void; onChangeU2: (v: string) => void }) {
+  const tinted = row.id === 'uniquely';
+  const labelBg = tinted ? '#eef7fc' : '#fafbfc';
+  const valueBg = tinted ? '#eef7fc' : undefined;
+  const valueColor = tinted ? '#0d3f57' : '#4a4d55';
+
+  if (row.spanBoth) {
+    return (
+      <>
+        <div style={{ padding: '14px 16px', fontSize: 12.5, fontWeight: 700, background: labelBg, borderBottom: '1px solid #eef0f2' }}>
+          {row.label}<div style={{ fontSize: 10.5, color: '#9b9c9f', fontWeight: 500, fontStyle: 'italic' }}>{row.sub}</div>
+        </div>
+        <div style={{ gridColumn: '2 / -1', padding: 14, fontSize: 12.5, lineHeight: 1.5, borderLeft: '1px solid #eef0f2', borderBottom: '1px solid #eef0f2', background: valueBg, color: valueColor }}>
+          <EditableArea value={row.u1} onCommit={onChangeU1} placeholder="describe this…" rows={2} />
+        </div>
+      </>
+    );
+  }
   return (
     <>
-      <div style={{ padding: '14px 16px', fontSize: 12.5, fontWeight: 700, background: '#fafbfc', borderBottom: '1px solid #eef0f2' }}>{label}<div style={{ fontSize: 10.5, color: '#9b9c9f', fontWeight: 500, fontStyle: 'italic' }}>{sub}</div></div>
-      <div style={{ padding: 14, fontSize: 12, lineHeight: 1.5, borderLeft: '1px solid #eef0f2', borderBottom: '1px solid #eef0f2', color: '#4a4d55' }}>{u1}</div>
-      <div style={{ padding: 14, fontSize: 12, lineHeight: 1.5, borderLeft: '1px solid #eef0f2', borderBottom: '1px solid #eef0f2', color: '#4a4d55' }}>{u2}</div>
+      <div style={{ padding: '14px 16px', fontSize: 12.5, fontWeight: 700, background: '#fafbfc', borderBottom: '1px solid #eef0f2' }}>
+        {row.label}<div style={{ fontSize: 10.5, color: '#9b9c9f', fontWeight: 500, fontStyle: 'italic' }}>{row.sub}</div>
+      </div>
+      <div style={{ padding: 14, fontSize: 12, lineHeight: 1.5, borderLeft: '1px solid #eef0f2', borderBottom: '1px solid #eef0f2', color: '#4a4d55' }}>
+        <EditableArea value={row.u1} onCommit={onChangeU1} placeholder="describe this…" rows={2} />
+      </div>
+      <div style={{ padding: 14, fontSize: 12, lineHeight: 1.5, borderLeft: '1px solid #eef0f2', borderBottom: '1px solid #eef0f2', color: '#4a4d55' }}>
+        <EditableArea value={row.u2} onCommit={onChangeU2} placeholder="describe this…" rows={2} />
+      </div>
     </>
   );
 }
 
 function Step1() {
-  const { go, setStep } = useAppState();
-  const snapshotRows = [
-    { label: 'For', sub: 'target user', u1: 'Kids who play sports and outgrow shoes fast', u2: 'Parents managing cost, hassle & sustainability' },
-    { label: 'Who want', sub: 'unmet needs', u1: 'More control & agency in their shoe choices; the right fit & performance; a pleasant, less painful shopping experience', u2: 'Confidence kids have the right shoes; less time spent shopping; fewer conflicts & stress' },
-  ];
-  const storyboard = [
-    { n: 1, text: 'Parent sees Easykicks and signs their kid up online', blank: false },
-    { n: 2, text: 'First box arrives; kid tries on the shoes', blank: false },
-    { n: 3, text: '(blank on purpose)', blank: true },
-    { n: 4, text: 'Outgrown shoes go back in the prepaid bag', blank: false },
-    { n: 5, text: '(blank on purpose)', blank: true },
-  ];
+  const {
+    go, setStep, concepts, activeConceptId, workspaceData,
+    updateSnapshotUserLabel, updateSnapshotField, updateStoryboardCaption, toggleStoryboardBlank,
+  } = useAppState();
+  const concept = concepts.find(c => c.id === activeConceptId);
+  const data = workspaceData[activeConceptId];
+  if (!concept || !data) return null;
+  const { snapshot, storyboard, user1Label, user2Label } = data.step1;
+
   return (
     <div className="fb-screen">
       <SectionHeading title="Concept Snapshot" note="Template 3 — specific, fresh & worth testing" />
@@ -176,38 +320,52 @@ function Step1() {
         <div style={{ display: 'grid', gridTemplateColumns: '150px 1fr 1fr' }}>
           <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '150px 1fr 1fr', background: '#f6f8fa', borderBottom: '1px solid #e3e6ea' }}>
             <div style={{ padding: '12px 16px', fontSize: 11, fontWeight: 700, color: '#83878f', letterSpacing: '.05em' }}>CONCEPT</div>
-            <div style={{ padding: '12px 14px', fontSize: 11, fontWeight: 700, color: '#0079b0', borderLeft: '1px solid #e3e6ea' }}>USER 1 · Young Athletes (8–12)</div>
-            <div style={{ padding: '12px 14px', fontSize: 11, fontWeight: 700, color: '#0079b0', borderLeft: '1px solid #e3e6ea' }}>USER 2 · Their Parents</div>
+            <div style={{ padding: '12px 14px', fontSize: 11, fontWeight: 700, color: '#0079b0', borderLeft: '1px solid #e3e6ea', display: 'flex', gap: 4 }}>
+              USER 1 · <EditableText value={user1Label} onCommit={v => updateSnapshotUserLabel(concept.id, 'user1Label', v)} placeholder="label this user" />
+            </div>
+            <div style={{ padding: '12px 14px', fontSize: 11, fontWeight: 700, color: '#0079b0', borderLeft: '1px solid #e3e6ea', display: 'flex', gap: 4 }}>
+              USER 2 · <EditableText value={user2Label} onCommit={v => updateSnapshotUserLabel(concept.id, 'user2Label', v)} placeholder="label this user" />
+            </div>
           </div>
-          {snapshotRows.map(row => <RowGroup key={row.label} {...row} />)}
-          <div style={{ padding: '14px 16px', fontSize: 12.5, fontWeight: 700, background: '#fafbfc', borderBottom: '1px solid #eef0f2' }}>We will offer<div style={{ fontSize: 10.5, color: '#9b9c9f', fontWeight: 500, fontStyle: 'italic' }}>offering</div></div>
-          <div style={{ gridColumn: '2 / -1', padding: 14, fontSize: 12.5, lineHeight: 1.5, borderLeft: '1px solid #eef0f2', borderBottom: '1px solid #eef0f2', color: '#4a4d55' }}>A subscription that delivers the right shoes when kids need them, with a simple return-and-recycle loop for outgrown pairs.</div>
-          <div style={{ padding: '14px 16px', fontSize: 12.5, fontWeight: 700, background: '#fafbfc', borderBottom: '1px solid #eef0f2' }}>That provides<div style={{ fontSize: 10.5, color: '#9b9c9f', fontWeight: 500, fontStyle: 'italic' }}>benefits</div></div>
-          <div style={{ padding: 14, fontSize: 12, lineHeight: 1.5, borderLeft: '1px solid #eef0f2', borderBottom: '1px solid #eef0f2', color: '#4a4d55' }}>Self-expression, confidence & a special feeling when they perform</div>
-          <div style={{ padding: 14, fontSize: 12, lineHeight: 1.5, borderLeft: '1px solid #eef0f2', borderBottom: '1px solid #eef0f2', color: '#4a4d55' }}>The shoes their athletes need, when they need them — with less shopping pain</div>
-          <div style={{ padding: '14px 16px', fontSize: 12.5, fontWeight: 700, background: '#eef7fc' }}>Uniquely<div style={{ fontSize: 10.5, color: '#9b9c9f', fontWeight: 500, fontStyle: 'italic' }}>differentiation</div></div>
-          <div style={{ gridColumn: '2 / -1', padding: 14, fontSize: 12, lineHeight: 1.5, borderLeft: '1px solid #eef0f2', background: '#eef7fc', color: '#0d3f57' }}>A sustainable, cyclical buy-return process with accurate fit assessment and a 1:1 ongoing relationship — a service experience wrapped around the shoe.</div>
+          {snapshot.map(row => (
+            <SnapshotRowView
+              key={row.id}
+              row={row}
+              onChangeU1={v => updateSnapshotField(concept.id, row.id, 'u1', v)}
+              onChangeU2={v => updateSnapshotField(concept.id, row.id, 'u2', v)}
+            />
+          ))}
         </div>
       </Card>
 
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 12 }}>
         <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Storyboard</h3>
-        <span className="serif" style={{ fontSize: 12, color: '#9b9c9f', fontStyle: 'italic' }}>Template 4 — blank frames are intentional, to co-create with users</span>
+        <span className="serif" style={{ fontSize: 12, color: '#9b9c9f', fontStyle: 'italic' }}>Template 4 — click a frame to mark it blank for co-creation</span>
       </div>
       <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 6 }}>
-        {storyboard.map(f => (
-          <div key={f.n} style={{ flex: '0 0 190px' }}>
-            {f.blank ? (
-              <div style={{ height: 118, borderRadius: 11, border: '1.5px dashed #cdd6dc', background: '#fafbfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#b0b3b8', gap: 5 }}>
-                <PlusCircle size={24} />
-                <span style={{ fontSize: 10.5, fontWeight: 600 }}>co-create with user</span>
-              </div>
-            ) : (
-              <div style={{ height: 118, borderRadius: 11, border: '1px solid #e3e6ea', background: 'repeating-linear-gradient(45deg,#f4f6f8,#f4f6f8 8px,#eef1f4 8px,#eef1f4 16px)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a9aaad' }}>
-                <Image size={26} />
-              </div>
-            )}
-            <div style={{ fontSize: 11.5, color: f.blank ? '#b0b3b8' : '#5b5f67', marginTop: 7, lineHeight: 1.35 }}>{f.n} · {f.text}</div>
+        {storyboard.map((f, i) => (
+          <div key={f.id} style={{ flex: '0 0 190px' }}>
+            <div onClick={() => toggleStoryboardBlank(concept.id, f.id)} style={{ cursor: 'pointer' }}>
+              {f.blank ? (
+                <div style={{ height: 118, borderRadius: 11, border: '1.5px dashed #cdd6dc', background: '#fafbfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#b0b3b8', gap: 5 }}>
+                  <PlusCircle size={24} />
+                  <span style={{ fontSize: 10.5, fontWeight: 600 }}>co-create with user</span>
+                </div>
+              ) : (
+                <div style={{ height: 118, borderRadius: 11, border: '1px solid #e3e6ea', background: 'repeating-linear-gradient(45deg,#f4f6f8,#f4f6f8 8px,#eef1f4 8px,#eef1f4 16px)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a9aaad' }}>
+                  <Image size={26} />
+                </div>
+              )}
+            </div>
+            <div style={{ fontSize: 11.5, color: f.blank ? '#b0b3b8' : '#5b5f67', marginTop: 7, lineHeight: 1.35, display: 'flex', gap: 4 }}>
+              <span>{i + 1} ·</span>
+              <EditableText
+                value={f.caption}
+                onCommit={v => updateStoryboardCaption(concept.id, f.id, v)}
+                placeholder={f.blank ? '(blank on purpose)' : 'describe this frame…'}
+                style={{ flex: 1 }}
+              />
+            </div>
           </div>
         ))}
       </div>
@@ -217,18 +375,23 @@ function Step1() {
   );
 }
 
+const assumptionMeta: Record<AssumptionCategory, { title: string; color: string; textColor: string; icon: React.ElementType; bg: string; border: string }> = {
+  desirability: { title: 'Desirability', color: '#008ecd', textColor: '#0079b0', icon: Heart, bg: '#eef7fc', border: '#d6ecf8' },
+  feasibility: { title: 'Feasibility', color: '#2ea38e', textColor: '#25826f', icon: Wrench, bg: '#eef6f3', border: '#d4ebe4' },
+  viability: { title: 'Viability', color: '#5b6b7a', textColor: '#4c5966', icon: ChartLineUp, bg: '#f3f5f7', border: '#e3e7ea' },
+};
+const assumptionCategories: AssumptionCategory[] = ['desirability', 'feasibility', 'viability'];
+
 function Step2() {
-  const { setStep } = useAppState();
-  const assumptionCols = [
-    { title: 'Desirability', color: '#008ecd', textColor: '#0079b0', icon: Heart, bg: '#eef7fc', border: '#d6ecf8', items: ["Parents want to recycle their kids' outgrown shoes", 'A prepaid return bag removes the friction of sending back'] },
-    { title: 'Feasibility', color: '#2ea38e', textColor: '#25826f', icon: Wrench, bg: '#eef6f3', border: '#d4ebe4', items: ['Parents will actually mail the old shoes back', 'Returns can be processed at existing facilities'] },
-    { title: 'Viability', color: '#5b6b7a', textColor: '#4c5966', icon: ChartLineUp, bg: '#f3f5f7', border: '#e3e7ea', items: ['Cost to process each returned pair stays low enough', 'Recovered materials offset the processing cost'] },
-  ];
-  const evidenceRows = [
-    { a: 'Parents will return old shoes', e: '% of buyers who mail back within 60 days', t: '≥ 30%', asp: '60%', s: 'Prepaid-bag tracking' },
-    { a: 'Parents value recycling', e: 'Unprompted positive mentions in interviews', t: '50%', asp: '80%', s: 'Intercept interviews' },
-    { a: 'Processing stays viable', e: 'Fully-loaded cost per returned pair', t: '< $4', asp: '< $2', s: 'Ops finance log' },
-  ];
+  const {
+    setStep, concepts, activeConceptId, workspaceData,
+    addAssumption, updateAssumption, deleteAssumption, addEvidenceRow, updateEvidenceField, deleteEvidenceRow,
+  } = useAppState();
+  const concept = concepts.find(c => c.id === activeConceptId);
+  const data = workspaceData[activeConceptId];
+  if (!concept || !data) return null;
+  const { assumptions, evidence } = data.step2;
+
   return (
     <div className="fb-screen">
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 6 }}>
@@ -241,21 +404,24 @@ function Step2() {
 
       <h4 style={{ margin: '0 0 11px', fontSize: 13.5, fontWeight: 700 }}>Surfacing Assumptions <span style={{ fontWeight: 500, color: '#9b9c9f', fontSize: 11.5 }}>· Template 5</span></h4>
       <div className="fb-grid3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 24 }}>
-        {assumptionCols.map(col => {
-          const Icon = col.icon;
+        {assumptionCategories.map(cat => {
+          const meta = assumptionMeta[cat];
+          const Icon = meta.icon;
+          const items = assumptions[cat];
           return (
-            <Card key={col.title} style={{ borderTop: `3px solid ${col.color}`, padding: 16, borderRadius: 14 }}>
+            <Card key={cat} style={{ borderTop: `3px solid ${meta.color}`, padding: 16, borderRadius: 14 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <Icon size={16} weight="fill" color={col.color} />
-                <span style={{ fontSize: 12.5, fontWeight: 700, color: col.textColor }}>{col.title}</span>
+                <Icon size={16} weight="fill" color={meta.color} />
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: meta.textColor }}>{meta.title}</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {col.items.map(item => (
-                  <div key={item} style={{ background: col.bg, border: `1px solid ${col.border}`, borderRadius: 9, padding: '9px 11px', fontSize: 12, lineHeight: 1.4, fontWeight: 500 }}>{item}</div>
+                {items.map(item => (
+                  <div key={item.id} className="fb-note" style={{ position: 'relative', background: meta.bg, border: `1px solid ${meta.border}`, borderRadius: 9, padding: '9px 26px 9px 11px', fontSize: 12, lineHeight: 1.4, fontWeight: 500 }}>
+                    <EditableArea value={item.text} onCommit={v => updateAssumption(concept.id, cat, item.id, v)} rows={1} placeholder="new assumption…" />
+                    <RowDelete onClick={() => deleteAssumption(concept.id, cat, item.id)} style={{ position: 'absolute', top: 4, right: 4 }} />
+                  </div>
                 ))}
-                <div style={{ background: '#f6f8fa', border: '1px dashed #cdd6dc', borderRadius: 9, padding: '9px 11px', fontSize: 11.5, color: '#9b9c9f', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <PlusCircle size={12} /> add assumption
-                </div>
+                <AddRowButton label="add assumption" onClick={() => addAssumption(concept.id, cat)} />
               </div>
             </Card>
           );
@@ -279,14 +445,8 @@ function Step2() {
                   <div />
                 </div>
                 <div style={{ position: 'absolute', top: '22%', left: '70%', transform: 'translate(-50%,-50%)', background: '#fff', border: '1.5px solid #e8956b', borderRadius: 9, padding: '5px 8px', boxShadow: '0 3px 9px rgba(232,149,107,.22)', maxWidth: 120 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, lineHeight: 1.25, color: '#b5502a' }}>Parents will mail shoes back</div>
+                  <div style={{ fontSize: 10, fontWeight: 700, lineHeight: 1.25, color: '#b5502a' }}>Most critical, most unknown</div>
                   <div style={{ fontSize: 8.5, color: '#c98a6f', fontWeight: 600, marginTop: 2 }}>TEST FIRST</div>
-                </div>
-                <div style={{ position: 'absolute', top: '34%', left: '33%', transform: 'translate(-50%,-50%)', background: '#fff', border: '1.5px solid #cfe8f6', borderRadius: 9, padding: '5px 8px', boxShadow: '0 2px 6px rgba(0,0,0,.06)', maxWidth: 110 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, lineHeight: 1.25 }}>Parents value recycling</div>
-                </div>
-                <div style={{ position: 'absolute', top: '70%', left: '64%', transform: 'translate(-50%,-50%)', background: '#fff', border: '1.5px solid #d8d9da', borderRadius: 9, padding: '5px 8px', boxShadow: '0 2px 6px rgba(0,0,0,.05)', maxWidth: 110 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, lineHeight: 1.25, color: '#6b6e76' }}>Existing facilities suffice</div>
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
@@ -320,24 +480,31 @@ function Step2() {
       </div>
 
       <h4 style={{ margin: '0 0 11px', fontSize: 13.5, fontWeight: 700 }}>Assumptions → Evidence <span style={{ fontWeight: 500, color: '#9b9c9f', fontSize: 11.5 }}>· Template 7</span></h4>
-      <Card style={{ overflow: 'hidden', overflowX: 'auto', borderRadius: 14 }}>
-        <div style={{ minWidth: 720 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.5fr 1.2fr 1fr', background: '#f6f8fa', borderBottom: '1px solid #e3e6ea', fontSize: 10.5, fontWeight: 700, color: '#83878f', letterSpacing: '.04em' }}>
+      <Card style={{ overflow: 'hidden', overflowX: 'auto', borderRadius: 14, marginBottom: 10 }}>
+        <div style={{ minWidth: 760 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.5fr 1.2fr 1fr 40px', background: '#f6f8fa', borderBottom: '1px solid #e3e6ea', fontSize: 10.5, fontWeight: 700, color: '#83878f', letterSpacing: '.04em' }}>
             <div style={{ padding: '11px 14px' }}>ASSUMPTION</div>
             <div style={{ padding: '11px 14px', borderLeft: '1px solid #e9ecef' }}>EVIDENCE</div>
             <div style={{ padding: '11px 14px', borderLeft: '1px solid #e9ecef' }}>THRESHOLD → ASPIRATIONAL</div>
             <div style={{ padding: '11px 14px', borderLeft: '1px solid #e9ecef' }}>SOURCE</div>
+            <div />
           </div>
-          {evidenceRows.map((r, i) => (
-            <div key={r.a} style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.5fr 1.2fr 1fr', borderBottom: i < evidenceRows.length - 1 ? '1px solid #eef0f2' : 'none', fontSize: 12, lineHeight: 1.45 }}>
-              <div style={{ padding: '13px 14px', fontWeight: 600 }}>{r.a}</div>
-              <div style={{ padding: '13px 14px', borderLeft: '1px solid #f0f2f4', color: '#4a4d55' }}>{r.e}</div>
-              <div style={{ padding: '13px 14px', borderLeft: '1px solid #f0f2f4' }}><span style={{ fontWeight: 700, color: '#0079b0' }}>{r.t}</span> <span style={{ color: '#9b9c9f' }}>→ {r.asp}</span></div>
-              <div style={{ padding: '13px 14px', borderLeft: '1px solid #f0f2f4', color: '#4a4d55' }}>{r.s}</div>
+          {evidence.map((r, i) => (
+            <div key={r.id} className="fb-note fb-hover fb-hover-bg" style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.5fr 1.2fr 1fr 40px', borderBottom: i < evidence.length - 1 ? '1px solid #eef0f2' : 'none', fontSize: 12, lineHeight: 1.45, alignItems: 'center' }}>
+              <div style={{ padding: '13px 14px', fontWeight: 600 }}><EditableText value={r.assumption} onCommit={v => updateEvidenceField(concept.id, r.id, 'assumption', v)} /></div>
+              <div style={{ padding: '13px 14px', borderLeft: '1px solid #f0f2f4', color: '#4a4d55' }}><EditableText value={r.evidence} onCommit={v => updateEvidenceField(concept.id, r.id, 'evidence', v)} /></div>
+              <div style={{ padding: '13px 14px', borderLeft: '1px solid #f0f2f4', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <EditableText value={r.threshold} onCommit={v => updateEvidenceField(concept.id, r.id, 'threshold', v)} style={{ fontWeight: 700, color: '#0079b0' }} />
+                <span style={{ color: '#9b9c9f' }}>→</span>
+                <EditableText value={r.aspirational} onCommit={v => updateEvidenceField(concept.id, r.id, 'aspirational', v)} style={{ color: '#9b9c9f' }} />
+              </div>
+              <div style={{ padding: '13px 14px', borderLeft: '1px solid #f0f2f4', color: '#4a4d55' }}><EditableText value={r.source} onCommit={v => updateEvidenceField(concept.id, r.id, 'source', v)} /></div>
+              <RowDelete onClick={() => deleteEvidenceRow(concept.id, r.id)} style={{ margin: '0 auto' }} />
             </div>
           ))}
         </div>
       </Card>
+      <AddRowButton label="add evidence row" onClick={() => addEvidenceRow(concept.id)} style={{ marginBottom: 24 }} />
 
       <StepFooter backLabel="Step 1" onBack={() => setStep(1)} nextLabel="Continue to Step 3 · Select test" onNext={() => setStep(3)} />
     </div>
@@ -361,32 +528,50 @@ function QRow({ label, question, options }: { label: string; question: string; o
   );
 }
 
+const dataSortColor: Record<string, string> = { 'KNOW NOW': '#25826f', KNOWABLE: '#0079b0', 'FIELD ONLY': '#b5502a' };
+const dataSortBg: Record<string, string> = { 'KNOW NOW': '#eef6f3', KNOWABLE: '#eef7fc', 'FIELD ONLY': '#fdf1ea' };
+
 function Step3() {
-  const { setStep, q1, q2, q3, setQ1, setQ2, setQ3, saydo, setSaydo } = useAppState();
+  const {
+    setStep, go, concepts, activeConceptId, workspaceData,
+    setConceptQ1, setConceptQ2, setConceptQ3, setConceptSaydo, updateDigestField, confirmTest,
+  } = useAppState();
+  const concept = concepts.find(c => c.id === activeConceptId);
+  const data = workspaceData[activeConceptId];
+  const [confirmed, setConfirmed] = useState(false);
+  if (!concept || !data) return null;
+  const { q1, q2, q3, saydo, dataSort, digest } = data.step3;
   const rec = recommendation(q1, q2, q3);
   const RecIcon = rec ? iconMap[rec.icon] : Flask;
+
+  const digestCells: { k: string; field: 'testType' | 'prototype' | 'participants' | 'sampleTimeframe'; subField: 'testTypeSub' | 'prototypeSub' | 'participantsSub' | 'sampleTimeframeSub' }[] = [
+    { k: 'TEST TYPE', field: 'testType', subField: 'testTypeSub' },
+    { k: 'PROTOTYPE', field: 'prototype', subField: 'prototypeSub' },
+    { k: 'PARTICIPANTS', field: 'participants', subField: 'participantsSub' },
+    { k: 'SAMPLE · TIMEFRAME', field: 'sampleTimeframe', subField: 'sampleTimeframeSub' },
+  ];
 
   return (
     <div className="fb-screen">
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 18 }}>
         <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Selecting your test</h3>
-        <span className="serif" style={{ fontSize: 12, color: '#9b9c9f', fontStyle: 'italic' }}>a funnel of four questions → one test type</span>
+        <span className="serif" style={{ fontSize: 12, color: '#9b9c9f', fontStyle: 'italic' }}>a funnel of three questions → one test type</span>
       </div>
 
       <div className="fb-grid2" style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 16, marginBottom: 24 }}>
         <Card style={{ padding: 20, borderRadius: 14 }}>
           <CardHeading title="Test Decision Flow" tag="Template 10 · interactive" />
           <QRow label="Q1" question="Does data already exist to test this critical assumption?" options={[
-            { key: 'yes', text: 'Yes — analyze it', active: q1 === 'yes', onClick: () => setQ1('yes') },
-            { key: 'no', text: 'No — go to field', active: q1 === 'no', onClick: () => setQ1('no') },
+            { key: 'yes', text: 'Yes — analyze it', active: q1 === 'yes', onClick: () => setConceptQ1(concept.id, 'yes') },
+            { key: 'no', text: 'No — go to field', active: q1 === 'no', onClick: () => setConceptQ1(concept.id, 'no') },
           ]} />
           <QRow label="Q2" question="Test a component, or the whole concept?" options={[
-            { key: 'component', text: 'Component', active: q2 === 'component', onClick: () => setQ2('component') },
-            { key: 'whole', text: 'Whole concept', active: q2 === 'whole', onClick: () => setQ2('whole') },
+            { key: 'component', text: 'Component', active: q2 === 'component', onClick: () => setConceptQ2(concept.id, 'component') },
+            { key: 'whole', text: 'Whole concept', active: q2 === 'whole', onClick: () => setConceptQ2(concept.id, 'whole') },
           ]} />
           <QRow label="Q3" question="Do you need Say data or Do data?" options={[
-            { key: 'say', text: 'Say data', active: q3 === 'say', onClick: () => setQ3('say') },
-            { key: 'do', text: 'Do data', active: q3 === 'do', onClick: () => setQ3('do') },
+            { key: 'say', text: 'Say data', active: q3 === 'say', onClick: () => setConceptQ3(concept.id, 'say') },
+            { key: 'do', text: 'Do data', active: q3 === 'do', onClick: () => setConceptQ3(concept.id, 'do') },
           ]} />
         </Card>
 
@@ -400,6 +585,12 @@ function Step3() {
               </div>
               <div className="serif" style={{ fontSize: 23, fontWeight: 600, letterSpacing: '-.01em', marginBottom: 8 }}>{rec.name}</div>
               <p style={{ margin: 0, fontSize: 12.5, color: '#b6b9c0', lineHeight: 1.5 }}>{rec.note}</p>
+              <button
+                onClick={() => updateDigestField(concept.id, 'testType', rec.name)}
+                style={{ position: 'relative', marginTop: 14, alignSelf: 'flex-start', fontSize: 11, fontWeight: 600, color: '#0d3f57', background: '#fff', border: 'none', borderRadius: 20, padding: '5px 11px', cursor: 'pointer' }}
+              >
+                Use in Test Digest
+              </button>
             </div>
           ) : (
             <div style={{ position: 'relative', marginTop: 16, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, textAlign: 'center', color: '#8a8e97' }}>
@@ -414,7 +605,7 @@ function Step3() {
         <Card style={{ padding: '18px 20px', borderRadius: 14 }}>
           <CardHeading title="Say / Do Continuum" tag="Template 9" />
           <div style={{ marginBottom: 14 }}>
-            <input type="range" min={0} max={100} value={saydo} onChange={e => setSaydo(Number(e.target.value))} style={{ width: '100%' }} />
+            <input type="range" min={0} max={100} value={saydo} onChange={e => setConceptSaydo(concept.id, Number(e.target.value))} style={{ width: '100%' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
               <span style={{ fontSize: 11, fontWeight: 700, color: '#5b6b7a' }}>SAY · generative</span>
               <span style={{ fontSize: 11, fontWeight: 700, color: '#0079b0' }}>DO · evaluative</span>
@@ -425,13 +616,12 @@ function Step3() {
         <Card style={{ padding: '18px 20px', borderRadius: 14 }}>
           <CardHeading title="Data Sort" tag="Template 8" />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-            {[
-              { tag: 'KNOW NOW', color: '#25826f', bg: '#eef6f3', text: 'Shoe recycling rates from prior CSR data' },
-              { tag: 'KNOWABLE', color: '#0079b0', bg: '#eef7fc', text: 'Return-shipping cost per parcel' },
-              { tag: 'FIELD ONLY', color: '#b5502a', bg: '#fdf1ea', text: 'Whether parents actually mail shoes back' },
-            ].map(row => (
-              <div key={row.tag} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: row.color, background: row.bg, borderRadius: 6, padding: '3px 7px', flex: '0 0 auto', width: 96, textAlign: 'center' }}>{row.tag}</span>
+            {dataSort.length === 0 && (
+              <div style={{ fontSize: 11.5, color: '#b0b3b8', fontStyle: 'italic' }}>No data-sort notes yet for this concept.</div>
+            )}
+            {dataSort.map(row => (
+              <div key={row.id} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: dataSortColor[row.tag], background: dataSortBg[row.tag], borderRadius: 6, padding: '3px 7px', flex: '0 0 auto', width: 96, textAlign: 'center' }}>{row.tag}</span>
                 <span style={{ fontSize: 11.5 }}>{row.text}</span>
               </div>
             ))}
@@ -439,23 +629,37 @@ function Step3() {
         </Card>
       </div>
 
-      <h4 style={{ margin: '0 0 11px', fontSize: 13.5, fontWeight: 700 }}>Test Digest <span style={{ fontWeight: 500, color: '#9b9c9f', fontSize: 11.5 }}>· Template 11 — the one-page test summary</span></h4>
-      <Card style={{ padding: 20, borderRadius: 14 }}>
+      <h4 style={{ margin: '0 0 11px', fontSize: 13.5, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 10 }}>
+        Test Digest <span style={{ fontWeight: 500, color: '#9b9c9f', fontSize: 11.5 }}>· Template 11 — the one-page test summary</span>
+      </h4>
+      <Card style={{ padding: 20, borderRadius: 14, marginBottom: 14 }}>
         <div className="fb-grid4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
-          {[
-            { k: 'TEST TYPE', v: 'Simulation', sub: 'Wizard-of-Oz returns', vColor: '#0079b0' },
-            { k: 'PROTOTYPE', v: 'Prepaid return bag', sub: 'Physical mock-up' },
-            { k: 'PARTICIPANTS', v: "Parents buying kids' shoes", sub: 'Recruited in-store' },
-            { k: 'SAMPLE · TIMEFRAME', v: '40 buyers · 60 days', sub: 'Return window' },
-          ].map(cell => (
+          {digestCells.map(cell => (
             <div key={cell.k}>
               <div style={{ fontSize: 10.5, fontWeight: 700, color: '#83878f', letterSpacing: '.04em', marginBottom: 5 }}>{cell.k}</div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: cell.vColor }}>{cell.v}</div>
-              <div style={{ fontSize: 11, color: '#9b9c9f', marginTop: 2 }}>{cell.sub}</div>
+              <EditableText value={digest[cell.field]} onCommit={v => updateDigestField(concept.id, cell.field, v)} placeholder="add…" style={{ fontSize: 13, fontWeight: 700, color: '#0079b0', display: 'block' }} />
+              <EditableText value={digest[cell.subField]} onCommit={v => updateDigestField(concept.id, cell.subField, v)} placeholder="add detail…" style={{ fontSize: 11, color: '#9b9c9f', display: 'block', marginTop: 2 }} />
             </div>
           ))}
         </div>
       </Card>
+
+      <div className="no-print" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
+        <span className="serif" style={{ fontSize: 11.5, color: '#9b9c9f', fontStyle: 'italic' }}>Confirming logs this test into your Tests tracker as "In field."</span>
+        <button
+          onClick={() => { confirmTest(concept.id); setConfirmed(true); }}
+          className="fb-btn-primary"
+          style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#008ecd', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 16px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+        >
+          <Flask size={14} weight="fill" /> Confirm test → log to Tests
+        </button>
+      </div>
+      {confirmed && (
+        <div className="no-print" style={{ marginTop: -14, marginBottom: 24, background: '#eef6f3', border: '1px solid #cfe9e2', borderRadius: 9, padding: '9px 12px', fontSize: 12, color: '#25826f', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Check size={14} weight="bold" /> Logged.{' '}
+          <span onClick={() => go('tests')} style={{ cursor: 'pointer', textDecoration: 'underline', color: '#0079b0', fontWeight: 600 }}>View it in Tests →</span>
+        </div>
+      )}
 
       <StepFooter backLabel="Step 2" onBack={() => setStep(2)} nextLabel="Continue to Step 4 · Prototype" onNext={() => setStep(4)} />
     </div>
@@ -463,14 +667,15 @@ function Step3() {
 }
 
 function Step4() {
-  const { setStep, fidelity, setFidelity } = useAppState();
-  const formats = [
-    { icon: Cards, label: 'Storyboard', sub: 'low-fi', selected: false },
-    { icon: ImageSquare, label: 'Poster', sub: 'low-fi', selected: false },
-    { icon: Package, label: 'Physical mock-up', sub: 'selected · mid-fi', selected: true },
-    { icon: DeviceMobile, label: 'Digital mock-up', sub: 'mid-fi', selected: false },
-    { icon: RocketLaunch, label: 'MVP', sub: 'high-fi', selected: false },
-  ];
+  const {
+    setStep, concepts, activeConceptId, workspaceData,
+    setConceptFidelity, selectFormat, toggleResearchGuideItem,
+  } = useAppState();
+  const concept = concepts.find(c => c.id === activeConceptId);
+  const data = workspaceData[activeConceptId];
+  if (!concept || !data) return null;
+  const { fidelity, selectedFormat, researchGuide } = data.step4;
+
   return (
     <div className="fb-screen">
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 18 }}>
@@ -483,14 +688,14 @@ function Step4() {
           <CardHeading title="Prototype Format Selection" tag="Template 12" />
           <div style={{ marginBottom: 16 }}>
             <div style={{ fontSize: 11.5, fontWeight: 600, color: '#5b5f67', marginBottom: 6 }}>How real does it need to look &amp; feel?</div>
-            <input type="range" min={0} max={100} value={fidelity} onChange={e => setFidelity(Number(e.target.value))} style={{ width: '100%' }} />
+            <input type="range" min={0} max={100} value={fidelity} onChange={e => setConceptFidelity(concept.id, Number(e.target.value))} style={{ width: '100%' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
               <span style={{ fontSize: 11, fontWeight: 700, color: '#5b6b7a' }}>LOW FIDELITY</span>
               <span style={{ fontSize: 11, fontWeight: 700, color: '#0079b0' }}>HIGH FIDELITY</span>
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {[{ label: 'Form', hint: 'how it looks', v: 40 }, { label: 'Function', hint: 'how it works', v: 55 }, { label: 'Interactivity', hint: 'how it engages', v: 62 }].map(row => (
+            {[{ label: 'Form', hint: 'how it looks', v: Math.max(6, fidelity - 12) }, { label: 'Function', hint: 'how it works', v: fidelity }, { label: 'Interactivity', hint: 'how it engages', v: Math.min(100, fidelity + 12) }].map(row => (
               <div key={row.label}>
                 <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 4 }}>{row.label} <span style={{ color: '#9b9c9f' }}>· {row.hint}</span></div>
                 <div style={{ height: 5, background: '#eef1f4', borderRadius: 4, overflow: 'hidden' }}>
@@ -501,23 +706,15 @@ function Step4() {
           </div>
         </Card>
         <Card style={{ padding: 20, borderRadius: 14 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-            <h4 style={{ margin: 0, fontSize: 13.5, fontWeight: 700 }}>Research Guide</h4>
-            <span style={{ fontSize: 11, color: '#9b9c9f' }}>consistent testers, right data</span>
-          </div>
+          <CardHeading title="Research Guide" tag="consistent testers, right data" />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
-            {[
-              { text: 'Roles of researcher & participant defined', done: true },
-              { text: 'Interview guide & probing questions drafted', done: true },
-              { text: 'Privacy notice / consent form ready', done: false },
-              { text: 'Recruiting plans A, B & C in place', done: false },
-            ].map(item => (
-              <div key={item.text} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            {researchGuide.map(item => (
+              <div key={item.id} onClick={() => toggleResearchGuideItem(concept.id, item.id)} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer' }}>
                 <span style={{
                   width: 18, height: 18, borderRadius: 5, flex: '0 0 auto', marginTop: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   background: item.done ? '#2ea38e' : 'transparent', border: item.done ? 'none' : '1.5px solid #c9cbce',
                 }}>{item.done && <Check size={11} weight="bold" color="#fff" />}</span>
-                <span style={{ fontSize: 12.5, lineHeight: 1.35 }}>{item.text}</span>
+                <span style={{ fontSize: 12.5, lineHeight: 1.35 }}>{item.label}</span>
               </div>
             ))}
           </div>
@@ -526,17 +723,19 @@ function Step4() {
 
       <h4 style={{ margin: '0 0 11px', fontSize: 13.5, fontWeight: 700 }}>Choose a format <span style={{ fontWeight: 500, color: '#9b9c9f', fontSize: 11.5 }}>· pick the fastest one that does the job</span></h4>
       <div className="fb-grid4" style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12 }}>
-        {formats.map(f => {
-          const Icon = f.icon;
+        {formatOptions.map(f => {
+          const Icon = formatIconMap[f.icon];
+          const selected = f.id === selectedFormat;
           return (
-            <div key={f.label} style={{
-              background: f.selected ? '#eef7fc' : '#fff', border: f.selected ? '1.5px solid #008ecd' : '1px solid #e7eaee',
-              borderRadius: 12, padding: 14, textAlign: 'center', opacity: f.selected ? 1 : .75,
-              boxShadow: f.selected ? '0 3px 12px rgba(0,142,205,.14)' : 'none',
+            <div key={f.id} onClick={() => selectFormat(concept.id, f.id)} style={{
+              cursor: 'pointer',
+              background: selected ? '#eef7fc' : '#fff', border: selected ? '1.5px solid #008ecd' : '1px solid #e7eaee',
+              borderRadius: 12, padding: 14, textAlign: 'center', opacity: selected ? 1 : .75,
+              boxShadow: selected ? '0 3px 12px rgba(0,142,205,.14)' : 'none',
             }}>
-              <Icon size={22} weight={f.selected ? 'fill' : 'regular'} color={f.selected ? '#008ecd' : '#5b6b7a'} style={{ margin: '0 auto', display: 'block' }} />
-              <div style={{ fontSize: 12, fontWeight: 700, marginTop: 8, color: f.selected ? '#0079b0' : undefined }}>{f.label}</div>
-              <div style={{ fontSize: 10, color: f.selected ? '#0079b0' : '#9b9c9f', marginTop: 2, fontWeight: f.selected ? 600 : 400 }}>{f.sub}</div>
+              <Icon size={22} weight={selected ? 'fill' : 'regular'} color={selected ? '#008ecd' : '#5b6b7a'} style={{ margin: '0 auto', display: 'block' }} />
+              <div style={{ fontSize: 12, fontWeight: 700, marginTop: 8, color: selected ? '#0079b0' : undefined }}>{f.label}</div>
+              <div style={{ fontSize: 10, color: selected ? '#0079b0' : '#9b9c9f', marginTop: 2, fontWeight: selected ? 600 : 400 }}>{f.sub}{selected ? ' · selected' : ''}</div>
             </div>
           );
         })}
@@ -548,12 +747,15 @@ function Step4() {
 }
 
 function Step5() {
-  const { setStep, go } = useAppState();
-  const results = [
-    { label: 'Return rate', actual: '41%', vs: 'vs ≥30%', pass: true, width: 68 },
-    { label: 'Value recycling (mentions)', actual: '63%', vs: 'vs 50%', pass: true, width: 63 },
-    { label: 'Cost per pair', actual: '$4.60', vs: 'vs <$4', pass: false, width: 44 },
-  ];
+  const {
+    setStep, go, concepts, activeConceptId, workspaceData,
+    toggleAuditItem, updateResultField, addResultRow, deleteResultRow, updateIterateNote, updateLiveStatus,
+  } = useAppState();
+  const concept = concepts.find(c => c.id === activeConceptId);
+  const data = workspaceData[activeConceptId];
+  if (!concept || !data) return null;
+  const { audit, liveStatusLabel, liveStatusNote, results, iterateNote } = data.step5;
+
   return (
     <div className="fb-screen">
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 18 }}>
@@ -565,66 +767,78 @@ function Step5() {
         <Card style={{ padding: 20, borderRadius: 14 }}>
           <CardHeading title="Test Audit Checklist" tag="Template 13" />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {[
-              { text: 'Prototype tests the critical assumption', done: true },
-              { text: 'Data capture plan works end-to-end', done: true },
-              { text: 'Pretested with 3 friendly proxies', done: true },
-              { text: 'Documentation running in parallel', done: false },
-            ].map(item => (
-              <div key={item.text} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            {audit.map(item => (
+              <div key={item.id} onClick={() => toggleAuditItem(concept.id, item.id)} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer' }}>
                 <span style={{
                   width: 18, height: 18, borderRadius: 5, flex: '0 0 auto', marginTop: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   background: item.done ? '#2ea38e' : 'transparent', border: item.done ? 'none' : '1.5px solid #c9cbce',
                 }}>{item.done && <Check size={11} weight="bold" color="#fff" />}</span>
-                <span style={{ fontSize: 12.5, lineHeight: 1.35 }}>{item.text}</span>
+                <span style={{ fontSize: 12.5, lineHeight: 1.35 }}>{item.label}</span>
               </div>
             ))}
           </div>
           <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px solid #eef0f2', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ width: 32, height: 32, borderRadius: 9, background: '#eef6f3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Broadcast size={17} weight="fill" color="#2ea38e" />
+            <span style={{ width: 32, height: 32, borderRadius: 9, background: liveStatusLabel === 'Not started' ? '#f1f3f6' : '#eef6f3', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
+              <Broadcast size={17} weight="fill" color={liveStatusLabel === 'Not started' ? '#9b9c9f' : '#2ea38e'} />
             </span>
-            <div>
-              <div style={{ fontSize: 12.5, fontWeight: 700 }}>Test is live</div>
-              <div style={{ fontSize: 11, color: '#9b9c9f' }}>Day 3 of 60 · 14 bags returned so far</div>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <EditableText value={liveStatusLabel} onCommit={v => updateLiveStatus(concept.id, v, liveStatusNote)} style={{ fontSize: 12.5, fontWeight: 700, display: 'block' }} placeholder="status" />
+              <EditableText value={liveStatusNote} onCommit={v => updateLiveStatus(concept.id, liveStatusLabel, v)} style={{ fontSize: 11, color: '#9b9c9f', display: 'block' }} placeholder="add a status note…" />
             </div>
           </div>
         </Card>
 
         <Card style={{ padding: 20, borderRadius: 14 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-            <h4 style={{ margin: 0, fontSize: 13.5, fontWeight: 700 }}>Results — threshold vs. actual</h4>
-            <span style={{ fontSize: 11, color: '#9b9c9f' }}>projected</span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {results.map(r => (
-              <div key={r.label}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
-                  <span style={{ fontSize: 12, fontWeight: 600 }}>{r.label}</span>
-                  <span style={{ fontSize: 12 }}>
-                    <b style={{ color: r.pass ? '#2ea38e' : '#c25a48' }}>{r.actual}</b> <span style={{ color: '#9b9c9f' }}>{r.vs}</span>{' '}
-                    <span style={{ fontSize: 10, fontWeight: 700, color: r.pass ? '#25826f' : '#b5502a', background: r.pass ? '#eef6f3' : '#fdf1ea', borderRadius: 20, padding: '1px 7px', marginLeft: 4 }}>{r.pass ? 'PASS' : 'BELOW'}</span>
-                  </span>
+          <CardHeading title="Results — threshold vs. actual" tag="projected" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 12 }}>
+            {results.length === 0 && <div style={{ fontSize: 11.5, color: '#b0b3b8', fontStyle: 'italic' }}>No results logged yet.</div>}
+            {results.map(r => {
+              const pass = r.comparison === 'gte' ? r.actual >= r.threshold : r.actual <= r.threshold;
+              const ratio = r.comparison === 'gte' ? (r.threshold ? r.actual / r.threshold : 0) : (r.actual ? r.threshold / r.actual : 0);
+              const width = Math.max(6, Math.min(100, ratio * 55));
+              return (
+                <div key={r.id} className="fb-note">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5, gap: 8 }}>
+                    <EditableText value={r.label} onCommit={v => updateResultField(concept.id, r.id, 'label', v)} style={{ fontSize: 12, fontWeight: 600 }} />
+                    <span style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 4, flex: '0 0 auto' }}>
+                      <b style={{ color: pass ? '#2ea38e' : '#c25a48', display: 'flex', alignItems: 'center' }}>
+                        <EditableText value={String(r.actual)} onCommit={v => updateResultField(concept.id, r.id, 'actual', Number(v) || 0)} style={{ width: 44, display: 'inline-block', textAlign: 'right' }} />
+                        {r.unit}
+                      </b>
+                      <span style={{ color: '#9b9c9f', display: 'flex', alignItems: 'center', gap: 3 }}>
+                        vs {r.comparison === 'gte' ? '≥' : '≤'}
+                        <EditableText value={String(r.threshold)} onCommit={v => updateResultField(concept.id, r.id, 'threshold', Number(v) || 0)} style={{ width: 40, display: 'inline-block' }} />
+                        {r.unit}
+                      </span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: pass ? '#25826f' : '#b5502a', background: pass ? '#eef6f3' : '#fdf1ea', borderRadius: 20, padding: '1px 7px' }}>{pass ? 'PASS' : 'BELOW'}</span>
+                      <RowDelete onClick={() => deleteResultRow(concept.id, r.id)} />
+                    </span>
+                  </div>
+                  <div style={{ height: 7, background: '#eef1f4', borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
+                    <span style={{ display: 'block', height: '100%', width: `${width}%`, background: pass ? '#2ea38e' : '#d98a7c', borderRadius: 4 }} />
+                    <span style={{ position: 'absolute', top: -2, bottom: -2, left: '50%', width: 2, background: '#2c2e35' }} />
+                  </div>
                 </div>
-                <div style={{ height: 7, background: '#eef1f4', borderRadius: 4, overflow: 'hidden', position: 'relative' }}>
-                  <span style={{ display: 'block', height: '100%', width: `${r.width}%`, background: r.pass ? '#2ea38e' : '#d98a7c', borderRadius: 4 }} />
-                  <span style={{ position: 'absolute', top: -2, bottom: -2, left: '50%', width: 2, background: '#2c2e35' }} />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+          <AddRowButton label="add result" onClick={() => addResultRow(concept.id)} />
         </Card>
       </div>
 
       <div style={{ background: '#eef7fc', border: '1px solid #cfe8f6', borderRadius: 14, padding: '18px 20px', display: 'flex', gap: 14, alignItems: 'flex-start', flexWrap: 'wrap' }}>
         <span style={{ width: 36, height: 36, borderRadius: 10, background: '#008ecd', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
-          <ArrowsClockwise size={19} weight="fill" color="#fff" />
+          <Check size={19} weight="bold" color="#fff" />
         </span>
         <div style={{ flex: 1, minWidth: 220 }}>
-          <div style={{ fontSize: 13.5, fontWeight: 700, color: '#0d3f57', marginBottom: 3 }}>Iterate: desirability confirmed, viability needs work</div>
-          <p style={{ margin: 0, fontSize: 12.5, color: '#33607a', lineHeight: 1.5, maxWidth: 680 }}>
-            Parents clearly want to recycle and will return shoes — move this component forward to a <b>smoke test</b> on the full subscription value proposition. But processing cost missed threshold: redesign the returns flow to consolidate shipments before the next round.
-          </p>
+          <div style={{ fontSize: 13.5, fontWeight: 700, color: '#0d3f57', marginBottom: 5 }}>Iterate</div>
+          <EditableArea
+            value={iterateNote}
+            onCommit={v => updateIterateNote(concept.id, v)}
+            rows={3}
+            placeholder="What did you learn? What moves forward, what needs to change?"
+            style={{ fontSize: 12.5, color: '#33607a', lineHeight: 1.5, maxWidth: 680 }}
+          />
         </div>
         <button onClick={() => go('tests')} className="fb-btn-primary" style={{ flex: '0 0 auto', background: '#008ecd', color: '#fff', border: 'none', borderRadius: 9, padding: '9px 14px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>Design next test</button>
       </div>

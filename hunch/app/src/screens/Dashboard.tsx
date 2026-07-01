@@ -1,13 +1,11 @@
 import {
-  Stack, TestTube, ListChecks, SealCheck, ArrowUp, ArrowRight, ChartBar,
-  SneakerMove, HandWaving, CompassTool, FirstAid, Lightning, Users,
+  Stack, TestTube, ListChecks, SealCheck, ArrowUp, ArrowRight, ChartBar, Lightbulb,
 } from '@phosphor-icons/react';
 import { useAppState } from '../state/AppState';
-import { concepts, tasks } from '../data/seed';
+import { tasks } from '../data/seed';
 import { Card, Chip, SegmentBar, ThinBar } from '../components/ui';
 import type { HomeVariant } from '../types';
 
-const iconMap: Record<string, React.ElementType> = { SneakerMove, HandWaving, CompassTool, FirstAid, Lightning, Users };
 const accentBg: Record<string, string> = { blue: '#eef7fc', teal: '#eef6f3', slate: '#f1f3f6' };
 const accentFg: Record<string, string> = { blue: '#008ecd', teal: '#2ea38e', slate: '#5b6b7a' };
 const chipStyle: Record<string, { color: string; bg: string; border: string }> = {
@@ -17,7 +15,8 @@ const chipStyle: Record<string, { color: string; bg: string; border: string }> =
 };
 
 export function Dashboard() {
-  const { home, setHome, go } = useAppState();
+  const { home, setHome, go, concepts, setActiveConcept } = useAppState();
+  const activeCount = concepts.filter(c => !c.shelved).length;
 
   const toggle = (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
@@ -63,8 +62,8 @@ export function Dashboard() {
               <span style={{ fontSize: 12, fontWeight: 600, color: '#83878f' }}>Active concepts</span>
               <Stack size={17} color="#008ecd" />
             </div>
-            <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-.02em' }}>6</div>
-            <div style={{ fontSize: 11.5, color: '#2ea38e', fontWeight: 600, marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}><ArrowUp size={11} weight="bold" /> 2 added this sprint</div>
+            <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-.02em' }}>{activeCount}</div>
+            <div style={{ fontSize: 11.5, color: '#2ea38e', fontWeight: 600, marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}><ArrowUp size={11} weight="bold" /> {concepts.length} total</div>
           </Card>
           <Card style={{ padding: '17px 18px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -103,13 +102,12 @@ export function Dashboard() {
             <p className="serif" style={{ margin: '0 0 16px', fontSize: 12.5, color: '#83878f', fontStyle: 'italic' }}>Each concept moves through the five steps.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {concepts.filter(c => !c.shelved).map(c => {
-                const Icon = iconMap[c.icon];
                 const cs = chipStyle[c.accent];
                 return (
-                  <div key={c.id} onClick={() => go('workspace')} className="fb-hover fb-hover-row" style={{ border: '1px solid #e7eaee', borderRadius: 12, padding: '13px 14px', cursor: 'pointer' }}>
+                  <div key={c.id} onClick={() => setActiveConcept(c.id)} className="fb-hover fb-hover-row" style={{ border: '1px solid #e7eaee', borderRadius: 12, padding: '13px 14px', cursor: 'pointer' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 11 }}>
                       <div style={{ width: 32, height: 32, borderRadius: 8, background: accentBg[c.accent], display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
-                        <Icon size={18} color={accentFg[c.accent]} />
+                        <Lightbulb size={18} color={accentFg[c.accent]} />
                       </div>
                       <div style={{ minWidth: 0, flex: 1 }}>
                         <div style={{ fontSize: 13.5, fontWeight: 700 }}>{c.name}</div>
@@ -181,7 +179,7 @@ export function Dashboard() {
                   {items.map(c => {
                     const cs = chipStyle[c.accent];
                     return (
-                      <div key={c.id} onClick={() => go('workspace')} className="fb-hover fb-hover-row" style={{ background: '#fff', border: '1px solid #e7eaee', borderRadius: 12, padding: 13, cursor: 'pointer' }}>
+                      <div key={c.id} onClick={() => setActiveConcept(c.id)} className="fb-hover fb-hover-row" style={{ background: '#fff', border: '1px solid #e7eaee', borderRadius: 12, padding: 13, cursor: 'pointer' }}>
                         <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 3 }}>{c.name}</div>
                         <div style={{ fontSize: 11, color: '#9b9c9f', marginBottom: 9 }}>{c.subtitle}</div>
                         <Chip color={cs.color} bg={cs.bg} border="transparent" style={{ border: 'none', padding: '2px 8px', fontSize: 10.5 }}>{c.quadrantLabel}</Chip>
@@ -208,7 +206,7 @@ export function Dashboard() {
               <h2 className="serif" style={{ fontSize: 32, fontWeight: 600, letterSpacing: '-.02em', margin: '8px 0 8px', lineHeight: 1.08 }}>Welcome Host trial<br />is running at 8 stations.</h2>
               <p className="serif" style={{ fontSize: 14.5, color: '#b6b9c0', margin: '0 0 18px', maxWidth: 440, lineHeight: 1.5 }}>Over 13,000 customer interactions logged. Desirability assumptions are holding — the warm-welcome metric is well past threshold.</p>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                <button onClick={() => go('workspace')} className="fb-btn-primary" style={{ background: '#008ecd', color: '#fff', border: 'none', borderRadius: 10, padding: '11px 17px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Open workspace</button>
+                <button onClick={() => setActiveConcept('welcome-host')} className="fb-btn-primary" style={{ background: '#008ecd', color: '#fff', border: 'none', borderRadius: 10, padding: '11px 17px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Open workspace</button>
                 <button onClick={() => go('tests')} style={{ background: 'rgba(255,255,255,.08)', color: '#fff', border: '1px solid rgba(255,255,255,.18)', borderRadius: 10, padding: '11px 17px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>View results</button>
               </div>
             </div>
