@@ -1,5 +1,5 @@
 import {
-  Flask, SquaresFour, Stack, Compass, TestTube, ListChecks, UsersThree, Graph,
+  SquaresFour, Stack, Compass, TestTube, ListChecks, Graph,
 } from '@phosphor-icons/react';
 import { useAppState } from '../state/AppState';
 import type { Screen } from '../types';
@@ -49,11 +49,9 @@ export function Sidebar() {
   return (
     <aside className="fb-sidebar" style={{ width: 248, flex: '0 0 auto', background: '#2c2e35', display: 'flex', flexDirection: 'column', color: '#c8cace', zIndex: 5 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '22px 20px 18px' }}>
-        <div style={{ width: 34, height: 34, borderRadius: 9, background: '#008ecd', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
-          <Flask size={20} weight="fill" color="#fff" />
-        </div>
+        <img src="/scintilla-icon.svg" width={34} height={34} alt="" style={{ flex: '0 0 auto' }} />
         <div className="fb-brandtext" style={{ lineHeight: 1.1 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', letterSpacing: '-.01em' }}>Hunch</div>
+          <div style={{ fontFamily: "'Work Sans',sans-serif", fontSize: 16, fontWeight: 800, color: '#fff', letterSpacing: '-.03em' }}>scintilla</div>
           <div style={{ fontSize: 11, color: '#7e828b', fontWeight: 500 }}>Test any idea</div>
         </div>
       </div>
@@ -67,27 +65,6 @@ export function Sidebar() {
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '6px 12px' }}>
         <NavButton item={{ screen: 'systems', label: 'Systems maps', icon: Graph }} newBadge />
       </nav>
-
-      <div style={{ padding: '14px 12px 2px', fontSize: 10.5, letterSpacing: '.12em', textTransform: 'uppercase', color: '#6c707a', fontWeight: 600 }}>Team</div>
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '6px 12px' }}>
-        <NavButton item={{ screen: 'team', label: 'Members & Activity', icon: UsersThree }} />
-      </nav>
-
-      <div style={{ marginTop: 'auto', padding: 14 }}>
-        <div className="fb-teamcard" style={{ background: '#34373f', border: '1px solid #41454e', borderRadius: 12, padding: 12 }}>
-          <div style={{ fontSize: 11, color: '#8a8e97', fontWeight: 600, marginBottom: 8 }}>PEER INSIGHT LAB</div>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            {[
-              { i: 'MA', bg: '#008ecd' },
-              { i: 'JR', bg: '#2ea38e' },
-              { i: 'TK', bg: '#5b6b7a' },
-            ].map((a, idx) => (
-              <span key={a.i} style={{ width: 26, height: 26, borderRadius: '50%', background: a.bg, color: '#fff', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #34373f', marginLeft: idx ? -8 : 0 }}>{a.i}</span>
-            ))}
-            <span style={{ width: 26, height: 26, borderRadius: '50%', background: '#454953', color: '#c8cace', fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #34373f', marginLeft: -8 }}>+4</span>
-          </div>
-        </div>
-      </div>
     </aside>
   );
 }

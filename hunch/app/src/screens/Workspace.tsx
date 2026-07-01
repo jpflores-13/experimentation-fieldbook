@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react';
 import {
-  SneakerMove, ChatCircle, ArrowLeft, ArrowRight, Image, PlusCircle, Heart, Wrench, ChartLineUp, Check,
+  SneakerMove, ArrowLeft, ArrowRight, Image, PlusCircle, Heart, Wrench, ChartLineUp, Check,
   Cards, ImageSquare, Package, DeviceMobile, RocketLaunch, Broadcast, ArrowsClockwise, Brain, ChatsCircle, Storefront, CursorClick, Flask,
 } from '@phosphor-icons/react';
 import { useAppState, recommendation } from '../state/AppState';
 import type { Step as StepNum } from '../types';
-import { Card, Avatar } from '../components/ui';
+import { Card } from '../components/ui';
 
 const iconMap: Record<string, React.ElementType> = { Brain, ChatsCircle, Storefront, CursorClick, Flask };
 
@@ -22,38 +22,49 @@ export function Workspace() {
 
   return (
     <div className="fb-screen" style={{ maxWidth: 1180, margin: '0 auto' }}>
-      <ConceptHeader />
+      <div className="no-print">
+        <ConceptHeader />
 
-      <Card style={{ padding: '14px 10px', marginBottom: 18, display: 'flex', alignItems: 'center', overflowX: 'auto' }}>
-        {steps.map((s, i) => {
-          const active = step === s.n;
-          const done = step > s.n;
-          return (
-            <button key={s.n} onClick={() => setStep(s.n)} style={{ flex: 1, minWidth: 120, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, padding: 4 }}>
-              <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                <span style={{ flex: 1, height: 2, background: i === 0 ? 'transparent' : '#e3e6ea' }} />
-                <span style={{
-                  width: 30, height: 30, borderRadius: '50%', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: active ? '#008ecd' : done ? '#2ea38e' : '#eef1f4',
-                  color: active || done ? '#fff' : '#9b9c9f',
-                  border: !active && !done ? '1.5px solid #d8d9da' : 'none',
-                  boxShadow: active ? '0 0 0 4px #dcefff' : 'none',
-                }}>
-                  {done ? <Check size={15} weight="bold" /> : s.n}
-                </span>
-                <span style={{ flex: 1, height: 2, background: i === steps.length - 1 ? 'transparent' : '#e3e6ea' }} />
-              </div>
-              <span style={{ fontSize: 11.5, fontWeight: 600, color: active ? '#2c2e35' : '#83878f' }}>{s.label}</span>
-            </button>
-          );
-        })}
-      </Card>
+        <Card style={{ padding: '14px 10px', marginBottom: 18, display: 'flex', alignItems: 'center', overflowX: 'auto' }}>
+          {steps.map((s, i) => {
+            const active = step === s.n;
+            const done = step > s.n;
+            return (
+              <button key={s.n} onClick={() => setStep(s.n)} style={{ flex: 1, minWidth: 120, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, padding: 4 }}>
+                <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                  <span style={{ flex: 1, height: 2, background: i === 0 ? 'transparent' : '#e3e6ea' }} />
+                  <span style={{
+                    width: 30, height: 30, borderRadius: '50%', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: active ? '#008ecd' : done ? '#2ea38e' : '#eef1f4',
+                    color: active || done ? '#fff' : '#9b9c9f',
+                    border: !active && !done ? '1.5px solid #d8d9da' : 'none',
+                    boxShadow: active ? '0 0 0 4px #dcefff' : 'none',
+                  }}>
+                    {done ? <Check size={15} weight="bold" /> : s.n}
+                  </span>
+                  <span style={{ flex: 1, height: 2, background: i === steps.length - 1 ? 'transparent' : '#e3e6ea' }} />
+                </div>
+                <span style={{ fontSize: 11.5, fontWeight: 600, color: active ? '#2c2e35' : '#83878f' }}>{s.label}</span>
+              </button>
+            );
+          })}
+        </Card>
 
-      {step === 1 && <Step1 />}
-      {step === 2 && <Step2 />}
-      {step === 3 && <Step3 />}
-      {step === 4 && <Step4 />}
-      {step === 5 && <Step5 />}
+        {step === 1 && <Step1 />}
+        {step === 2 && <Step2 />}
+        {step === 3 && <Step3 />}
+        {step === 4 && <Step4 />}
+        {step === 5 && <Step5 />}
+      </div>
+
+      <div className="print-only">
+        <PrintCoverPage />
+        <div className="fb-print-page"><PrintStepBanner n={1} label="Frame a testable idea" /><Step1 /></div>
+        <div className="fb-print-page"><PrintStepBanner n={2} label="Define evidence" /><Step2 /></div>
+        <div className="fb-print-page"><PrintStepBanner n={3} label="Select your test" /><Step3 /></div>
+        <div className="fb-print-page"><PrintStepBanner n={4} label="Build the prototype" /><Step4 /></div>
+        <div className="fb-print-page"><PrintStepBanner n={5} label="Execute · Analyze · Iterate" /><Step5 /></div>
+      </div>
     </div>
   );
 }
@@ -69,22 +80,39 @@ function ConceptHeader() {
           <h2 style={{ margin: 0, fontSize: 19, fontWeight: 700, letterSpacing: '-.01em' }}>Easykicks subscription</h2>
           <span style={{ fontSize: 11, fontWeight: 600, color: '#25826f', background: '#eef6f3', border: '1px solid #cfe9e2', padding: '2px 9px', borderRadius: 20 }}>Recycling component</span>
         </div>
-        <div style={{ fontSize: 12.5, color: '#83878f' }}>Nike · Peer Insight · testing whether parents will return old shoes</div>
+        <div style={{ fontSize: 12.5, color: '#83878f' }}>Nike · testing whether parents will return old shoes</div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <Avatar initials="JR" color="#2ea38e" size={28} style={{ border: '2px solid #eef1f4' }} />
-        <Avatar initials="MA" color="#008ecd" size={28} style={{ border: '2px solid #eef1f4', marginLeft: -8 }} />
+    </div>
+  );
+}
+
+function PrintStepBanner({ n, label }: { n: number; label: string }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, paddingBottom: 10, borderBottom: '2px solid #2c2e35' }}>
+      <span style={{ width: 22, height: 22, borderRadius: 6, background: '#2c2e35', color: '#fff', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>{n}</span>
+      <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.02em', textTransform: 'uppercase' }}>Step {n} · {label}</span>
+    </div>
+  );
+}
+
+function PrintCoverPage() {
+  return (
+    <div className="fb-print-page">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 28 }}>
+        <img src="/scintilla-mark.svg" width={22} height={22} alt="" />
+        <span style={{ fontFamily: "'Work Sans',sans-serif", fontSize: 15, fontWeight: 800, color: '#2c2e35', letterSpacing: '-.03em' }}>scintilla</span>
+        <span style={{ fontSize: 11, fontWeight: 700, color: '#0079b0', letterSpacing: '.05em', textTransform: 'uppercase' }}>· Experimentation workbook</span>
       </div>
-      <button className="fb-hover fb-hover-bg" style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#fff', border: '1px solid #e3e6ea', borderRadius: 10, padding: '9px 13px', fontSize: 12.5, fontWeight: 600, color: '#5b5f67', cursor: 'pointer' }}>
-        <ChatCircle size={15} /> 3
-      </button>
+      <h1 style={{ margin: '0 0 6px', fontSize: 26, fontWeight: 700, letterSpacing: '-.01em' }}>Easykicks subscription</h1>
+      <div style={{ fontSize: 13, color: '#5b5f67' }}>Nike · Recycling component · testing whether parents will return old shoes</div>
+      <div style={{ fontSize: 11, color: '#9b9c9f', marginTop: 18 }}>Steps 1–5, filled in {new Date().toLocaleDateString()}.</div>
     </div>
   );
 }
 
 function StepFooter({ backLabel, onBack, nextLabel, onNext, nextColor = '#008ecd', nextHover = '#0079b0' }: { backLabel: string; onBack: () => void; nextLabel: string; onNext: () => void; nextColor?: string; nextHover?: string }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 22, paddingTop: 18, borderTop: '1px solid #e7eaee' }}>
+    <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 22, paddingTop: 18, borderTop: '1px solid #e7eaee' }}>
       <button onClick={onBack} className="fb-hover fb-hover-bg" style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#fff', border: '1px solid #e3e6ea', borderRadius: 10, padding: '10px 15px', fontSize: 13, fontWeight: 600, color: '#5b5f67', cursor: 'pointer' }}>
         <ArrowLeft size={14} weight="bold" /> {backLabel}
       </button>

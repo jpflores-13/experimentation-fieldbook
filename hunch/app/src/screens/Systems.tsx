@@ -1,11 +1,19 @@
-import type { ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import {
+  ReactFlow, ReactFlowProvider, Background, BackgroundVariant, Handle, Position, BaseEdge, EdgeLabelRenderer,
+  useNodesState, useEdgesState, useReactFlow, useInternalNode,
+  type Node, type Edge, type NodeProps, type EdgeProps,
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import {
   Graph, Target, ArrowsClockwise, ArrowsCounterClockwise, Shapes, Star, Sparkle, Plus,
-  ArrowBendUpRight, PlusCircle, Eye, Sliders, ArrowLeft,
+  ArrowBendUpRight, PlusCircle, Eye, Sliders, ArrowLeft, X,
 } from '@phosphor-icons/react';
 import { useAppState } from '../state/AppState';
 import { archetypes, archetypeById, type GlyphSpec } from '../data/archetypes';
-import type { SysTab } from '../types';
+import type { SysTab, Ring, StarRating, SupportNote, LoopGraph, Polarity } from '../types';
+import { ACTIVE_MAP_ID } from '../data/systemsSeed';
+import { detectLoops, loopBadgeText, loopColors } from '../state/loopAnalysis';
 import { Card } from '../components/ui';
 
 const tabs: { key: SysTab; label: string; icon: React.ElementType }[] = [
@@ -68,49 +76,205 @@ function LegendRow({ swatch, border, children }: { swatch: string; border: strin
   );
 }
 
-function Note({ top, left, bg, border, color, children, icon }: { top: string; left: string; bg: string; border: string; color: string; children: ReactNode; icon?: ReactNode }) {
+const ringStyles: Record<Exclude<Ring, 'role'>, { bg: string; border: string; color: string }> = {
+  responsibility: { bg: '#ffd6a5', border: '#eab26a', color: '#6b4a1e' },
+  need: { bg: '#ffc2c2', border: '#e59595', color: '#7a3838' },
+  resource: { bg: '#bfe0f5', border: '#86c3e6', color: '#204a63' },
+  wish: { bg: '#c3e8d7', border: '#83ccae', color: '#245c47' },
+};
+
+const starColor: Record<StarRating, string> = { helpful: '#2ea38e', neutral: '#83878f', unhelpful: '#c25a48' };
+
+function CenterRoleNote({ note }: { note: SupportNote }) {
+  const { renameSupportNote } = useAppState();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(note.text);
+
+  const commit = () => {
+    renameSupportNote(ACTIVE_MAP_ID, note.id, draft);
+    setEditing(false);
+  };
+
   return (
-    <div style={{
-      position: 'absolute', top, left, transform: 'translate(-50%,-50%)', background: bg, border: `1px solid ${border}`,
-      borderRadius: 7, padding: '5px 8px', fontSize: 9.5, fontWeight: 600, color, maxWidth: 86, lineHeight: 1.2,
-      boxShadow: '0 2px 5px rgba(0,0,0,.06)', display: 'flex', alignItems: 'center', gap: 4,
-    }}>
-      {icon}{children}
+    <div
+      onClick={() => { if (!editing) { setDraft(note.text); setEditing(true); } }}
+      style={{
+        position: 'absolute', inset: '40%', borderRadius: '50%', background: '#fde6a9', border: '2px solid #ecc65f',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', boxShadow: '0 3px 12px rgba(236,198,95,.3)',
+        cursor: editing ? 'text' : 'pointer', padding: 8,
+      }}
+    >
+      {editing ? (
+        <input
+          autoFocus
+          onFocus={e => e.target.select()}
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={e => {
+            if (e.key === 'Enter') commit();
+            if (e.key === 'Escape') { setDraft(note.text); setEditing(false); }
+          }}
+          style={{ width: '90%', textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#7a5c11', background: 'transparent', border: 'none', borderBottom: '1px solid #7a5c11', outline: 'none' }}
+        />
+      ) : (
+        <span style={{ fontSize: 11.5, fontWeight: 700, color: '#7a5c11', lineHeight: 1.15 }}>{note.text}</span>
+      )}
+    </div>
+  );
+}
+
+function RingNote({ note, containerRef, startEditing, onEditStarted }: {
+  note: SupportNote;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+  startEditing: boolean;
+  onEditStarted: () => void;
+}) {
+  const { renameSupportNote, moveSupportNote, deleteSupportNote, cycleSupportNoteStar } = useAppState();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(note.text);
+  const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
+  const dragInfo = useRef<{ startX: number; startY: number; origX: number; origY: number; moved: boolean } | null>(null);
+
+  useEffect(() => {
+    if (startEditing) {
+      setDraft(note.text);
+      setEditing(true);
+      onEditStarted();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startEditing]);
+
+  const ring = note.ring as Exclude<Ring, 'role'>;
+  const style = ringStyles[ring];
+  const pos = dragPos ?? { x: note.x, y: note.y };
+
+  const commit = () => {
+    renameSupportNote(ACTIVE_MAP_ID, note.id, draft || note.text);
+    setEditing(false);
+  };
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (editing) return;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    dragInfo.current = { startX: e.clientX, startY: e.clientY, origX: note.x, origY: note.y, moved: false };
+  };
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!dragInfo.current || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const dxPct = ((e.clientX - dragInfo.current.startX) / rect.width) * 100;
+    const dyPct = ((e.clientY - dragInfo.current.startY) / rect.height) * 100;
+    if (Math.abs(dxPct) + Math.abs(dyPct) > 0.6) dragInfo.current.moved = true;
+    const nx = Math.min(97, Math.max(3, dragInfo.current.origX + dxPct));
+    const ny = Math.min(97, Math.max(3, dragInfo.current.origY + dyPct));
+    setDragPos({ x: nx, y: ny });
+  };
+  const onPointerUp = () => {
+    if (!dragInfo.current) return;
+    if (dragInfo.current.moved && dragPos) {
+      moveSupportNote(ACTIVE_MAP_ID, note.id, dragPos.x, dragPos.y);
+    } else if (!dragInfo.current.moved) {
+      setDraft(note.text);
+      setEditing(true);
+    }
+    dragInfo.current = null;
+    setDragPos(null);
+  };
+
+  return (
+    <div
+      className="fb-note"
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      style={{
+        position: 'absolute', top: `${pos.y}%`, left: `${pos.x}%`, transform: 'translate(-50%,-50%)',
+        background: style.bg, border: `1px solid ${style.border}`, borderRadius: 7, padding: '5px 8px',
+        fontSize: 9.5, fontWeight: 600, color: style.color, maxWidth: editing ? 170 : 90, lineHeight: 1.2,
+        boxShadow: '0 2px 5px rgba(0,0,0,.06)', display: 'flex', alignItems: 'center', gap: 4,
+        cursor: editing ? 'text' : 'grab', userSelect: 'none', touchAction: 'none', zIndex: editing || dragInfo.current ? 3 : 1,
+      }}
+    >
+      {ring === 'resource' && !editing && (
+        <button
+          onPointerDown={e => e.stopPropagation()}
+          onClick={e => { e.stopPropagation(); cycleSupportNoteStar(ACTIVE_MAP_ID, note.id); }}
+          style={{ border: 'none', background: 'transparent', padding: 0, cursor: 'pointer', display: 'flex', flex: '0 0 auto' }}
+          title="Cycle helpful / neutral / unhelpful"
+        >
+          <Star size={10} weight="fill" color={starColor[note.star ?? 'neutral']} />
+        </button>
+      )}
+      {ring === 'wish' && !editing && <Sparkle size={9} weight="fill" color="#2ea38e" style={{ flex: '0 0 auto' }} />}
+      {editing ? (
+        <input
+          autoFocus
+          onFocus={e => e.target.select()}
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={e => {
+            if (e.key === 'Enter') commit();
+            if (e.key === 'Escape') { setDraft(note.text); setEditing(false); }
+          }}
+          onPointerDown={e => e.stopPropagation()}
+          style={{ fontSize: 9.5, fontWeight: 600, color: style.color, background: 'transparent', border: 'none', borderBottom: `1px solid ${style.color}`, outline: 'none', width: 140 }}
+        />
+      ) : (
+        <span>{note.text}</span>
+      )}
+      {!editing && (
+        <button
+          className="fb-note-delete"
+          onPointerDown={e => e.stopPropagation()}
+          onClick={e => { e.stopPropagation(); deleteSupportNote(ACTIVE_MAP_ID, note.id); }}
+          style={{
+            border: 'none', background: 'rgba(0,0,0,.14)', borderRadius: '50%', width: 14, height: 14, flex: '0 0 auto',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: style.color,
+            padding: 0, marginLeft: 1, opacity: 0,
+          }}
+          title="Delete"
+        >
+          <X size={8} weight="bold" />
+        </button>
+      )}
     </div>
   );
 }
 
 function SupportMapTab() {
+  const { supportMaps, addSupportNote } = useAppState();
+  const map = supportMaps[ACTIVE_MAP_ID];
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [justAddedId, setJustAddedId] = useState<string | null>(null);
+
+  const roleNote = map.notes.find(n => n.ring === 'role');
+  const ringNotes = map.notes.filter(n => n.ring !== 'role');
+
+  const handleAdd = (ring: Exclude<Ring, 'role'>) => {
+    setJustAddedId(addSupportNote(ACTIVE_MAP_ID, ring));
+  };
+
   return (
     <div className="fb-screen fb-grid2" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 18 }}>
       <Card style={{ padding: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-          <h3 style={{ margin: 0, fontSize: 14.5, fontWeight: 700 }}>New-customer onboarding</h3>
-          <span style={{ fontSize: 11, color: '#9b9c9f' }}>role-centred map</span>
+          <h3 style={{ margin: 0, fontSize: 14.5, fontWeight: 700 }}>{map.title}</h3>
+          <span style={{ fontSize: 11, color: '#9b9c9f' }}>role-centred map · click a note to rename, drag to move</span>
         </div>
-        <div style={{ position: 'relative', width: '100%', maxWidth: 520, margin: '6px auto 0', aspectRatio: '1/1' }}>
+        <div ref={containerRef} style={{ position: 'relative', width: '100%', maxWidth: 520, margin: '6px auto 0', aspectRatio: '1/1' }}>
           <div style={{ position: 'absolute', inset: '1%', borderRadius: '50%', border: '1.5px solid #a9d4ef', background: 'rgba(191,224,245,.10)' }} />
           <div style={{ position: 'absolute', inset: '16%', borderRadius: '50%', border: '1.5px solid #efb0b0', background: 'rgba(255,194,194,.10)' }} />
           <div style={{ position: 'absolute', inset: '31%', borderRadius: '50%', border: '1.5px solid #eec18a', background: 'rgba(255,214,165,.12)' }} />
-          <div style={{
-            position: 'absolute', inset: '40%', borderRadius: '50%', background: '#fde6a9', border: '2px solid #ecc65f',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', boxShadow: '0 3px 12px rgba(236,198,95,.3)',
-          }}>
-            <span style={{ fontSize: 11.5, fontWeight: 700, color: '#7a5c11', lineHeight: 1.15 }}>Onboarding<br />Lead</span>
-          </div>
 
           <span style={{ position: 'absolute', top: '2.5%', left: '50%', transform: 'translateX(-50%)', fontSize: 9.5, fontWeight: 700, letterSpacing: '.06em', color: '#4a90c2', background: '#fff', padding: '0 5px' }}>RESOURCES</span>
           <span style={{ position: 'absolute', top: '17%', left: '50%', transform: 'translateX(-50%)', fontSize: 9.5, fontWeight: 700, letterSpacing: '.06em', color: '#cc6b6b', background: '#fff', padding: '0 5px' }}>NEEDS</span>
           <span style={{ position: 'absolute', top: '32%', left: '50%', transform: 'translateX(-50%)', fontSize: 9.5, fontWeight: 700, letterSpacing: '.06em', color: '#c58a3f', background: '#fff', padding: '0 5px' }}>RESPONSIBILITIES</span>
 
-          <Note top="39%" left="26%" bg="#ffd6a5" border="#eab26a" color="#6b4a1e">Run welcome calls</Note>
-          <Note top="63%" left="66%" bg="#ffd6a5" border="#eab26a" color="#6b4a1e">Keep help docs current</Note>
-          <Note top="22%" left="63%" bg="#ffc2c2" border="#e59595" color="#7a3838">Up-to-date product docs</Note>
-          <Note top="74%" left="34%" bg="#ffc2c2" border="#e59595" color="#7a3838">Analytics access</Note>
-          <Note top="9%" left="74%" bg="#bfe0f5" border="#86c3e6" color="#204a63" icon={<Star size={10} weight="fill" color="#2ea38e" />}>Help center</Note>
-          <Note top="88%" left="20%" bg="#bfe0f5" border="#86c3e6" color="#204a63" icon={<Star size={10} weight="fill" color="#c25a48" />}>Legacy LMS</Note>
-          <Note top="2%" left="16%" bg="#c3e8d7" border="#83ccae" color="#245c47" icon={<Sparkle size={9} weight="fill" color="#2ea38e" />}>Self-serve setup</Note>
-          <Note top="93%" left="76%" bg="#c3e8d7" border="#83ccae" color="#245c47" icon={<Sparkle size={9} weight="fill" color="#2ea38e" />}>Shared activation dashboard</Note>
+          {roleNote && <CenterRoleNote note={roleNote} />}
+          {ringNotes.map(n => (
+            <RingNote key={n.id} note={n} containerRef={containerRef} startEditing={justAddedId === n.id} onEditStarted={() => setJustAddedId(null)} />
+          ))}
         </div>
       </Card>
 
@@ -129,15 +293,16 @@ function SupportMapTab() {
             <span style={{ fontSize: 11, color: '#5b5f67', display: 'flex', alignItems: 'center', gap: 5 }}><Star size={12} weight="fill" color="#83878f" /> neutral</span>
             <span style={{ fontSize: 11, color: '#5b5f67', display: 'flex', alignItems: 'center', gap: 5 }}><Star size={12} weight="fill" color="#c25a48" /> unhelpful</span>
           </div>
+          <div style={{ fontSize: 10.5, color: '#9b9c9f', marginTop: 8 }}>Click a resource note's star to cycle it.</div>
         </Card>
 
         <Card style={{ padding: 18, borderRadius: 14 }}>
           <h4 style={{ margin: '0 0 10px', fontSize: 13.5, fontWeight: 700 }}>Add to the map</h4>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-            <button style={{ fontSize: 11.5, fontWeight: 600, color: '#6b4a1e', background: '#fff4e6', border: '1px solid #eab26a', borderRadius: 8, padding: '6px 11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Plus size={11} /> Responsibility</button>
-            <button style={{ fontSize: 11.5, fontWeight: 600, color: '#7a3838', background: '#fff0f0', border: '1px solid #e59595', borderRadius: 8, padding: '6px 11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Plus size={11} /> Need</button>
-            <button style={{ fontSize: 11.5, fontWeight: 600, color: '#204a63', background: '#eef7fc', border: '1px solid #86c3e6', borderRadius: 8, padding: '6px 11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Plus size={11} /> Resource</button>
-            <button style={{ fontSize: 11.5, fontWeight: 600, color: '#245c47', background: '#eef6f3', border: '1px solid #83ccae', borderRadius: 8, padding: '6px 11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Plus size={11} /> Wish</button>
+            <button onClick={() => handleAdd('responsibility')} style={{ fontSize: 11.5, fontWeight: 600, color: '#6b4a1e', background: '#fff4e6', border: '1px solid #eab26a', borderRadius: 8, padding: '6px 11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Plus size={11} /> Responsibility</button>
+            <button onClick={() => handleAdd('need')} style={{ fontSize: 11.5, fontWeight: 600, color: '#7a3838', background: '#fff0f0', border: '1px solid #e59595', borderRadius: 8, padding: '6px 11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Plus size={11} /> Need</button>
+            <button onClick={() => handleAdd('resource')} style={{ fontSize: 11.5, fontWeight: 600, color: '#204a63', background: '#eef7fc', border: '1px solid #86c3e6', borderRadius: 8, padding: '6px 11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Plus size={11} /> Resource</button>
+            <button onClick={() => handleAdd('wish')} style={{ fontSize: 11.5, fontWeight: 600, color: '#245c47', background: '#eef6f3', border: '1px solid #83ccae', borderRadius: 8, padding: '6px 11px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Plus size={11} /> Wish</button>
           </div>
         </Card>
 
@@ -154,97 +319,278 @@ function SupportMapTab() {
   );
 }
 
-function PolarityChip({ left, top, sign, color }: { left: number; top: number; sign: '+' | '-'; color: 'blue' | 'teal' | 'warn' }) {
-  const c = color === 'blue' ? '#008ecd' : color === 'teal' ? '#2ea38e' : '#c25a48';
-  const tc = color === 'blue' ? '#0079b0' : color === 'teal' ? '#25826f' : '#c25a48';
-  return (
-    <span style={{
-      position: 'absolute', left, top, transform: 'translate(-50%,-50%)', width: 18, height: 18, borderRadius: '50%',
-      background: '#fff', border: `1.5px solid ${c}`, color: tc, fontSize: sign === '+' ? 12 : 13, fontWeight: 700,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }}>{sign}</span>
-  );
+const loopGraphId = ACTIVE_MAP_ID;
+
+function rectIntersection(cx: number, cy: number, hw: number, hh: number, dx: number, dy: number) {
+  if (dx === 0 && dy === 0) return { x: cx, y: cy };
+  const scaleX = dx !== 0 ? hw / Math.abs(dx) : Infinity;
+  const scaleY = dy !== 0 ? hh / Math.abs(dy) : Infinity;
+  const scale = Math.min(scaleX, scaleY);
+  return { x: cx + dx * scale, y: cy + dy * scale };
 }
 
-function LoopBadge({ left, top, kind }: { left: number; top: number; kind: 'R' | 'B' }) {
-  const blue = kind === 'R';
+function curvedEdgePath(sx: number, sy: number, tx: number, ty: number, curvature: number) {
+  const mx = (sx + tx) / 2;
+  const my = (sy + ty) / 2;
+  const dx = tx - sx;
+  const dy = ty - sy;
+  const len = Math.hypot(dx, dy) || 1;
+  const nx = -dy / len;
+  const ny = dx / len;
+  const offset = len * curvature;
+  const cx = mx + nx * offset;
+  const cy = my + ny * offset;
+  const labelX = 0.25 * sx + 0.5 * cx + 0.25 * tx;
+  const labelY = 0.25 * sy + 0.5 * cy + 0.25 * ty;
+  return { path: `M ${sx},${sy} Q ${cx},${cy} ${tx},${ty}`, labelX, labelY };
+}
+
+const nodeToneStyle: Record<'neutral' | 'blue' | 'teal', { border: string; color: string; shadow: string }> = {
+  neutral: { border: '1.5px solid #d4dbe1', color: '#2c2e35', shadow: '0 2px 8px rgba(0,0,0,.07)' },
+  blue: { border: '1.5px solid #008ecd', color: '#0d3f57', shadow: '0 3px 10px rgba(0,142,205,.16)' },
+  teal: { border: '1.5px solid #2ea38e', color: '#1f5f4e', shadow: '0 3px 10px rgba(46,163,142,.16)' },
+};
+
+interface LoopNodeData extends Record<string, unknown> {
+  label: string;
+  tone: 'neutral' | 'blue' | 'teal';
+  editing: boolean;
+  isPendingSource: boolean;
+  onStartRename: () => void;
+  onCommit: (v: string) => void;
+  onCancel: () => void;
+}
+
+function LoopFlowNode({ data }: NodeProps<Node<LoopNodeData>>) {
+  const style = nodeToneStyle[data.tone];
   return (
-    <div style={{ position: 'absolute', left, top, transform: 'translate(-50%,-50%)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, pointerEvents: 'none' }}>
-      <span style={{
-        width: 34, height: 34, borderRadius: '50%', background: blue ? '#eef7fc' : '#eef6f3', border: `1.5px solid ${blue ? '#008ecd' : '#2ea38e'}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', color: blue ? '#0079b0' : '#25826f',
-      }}>
-        {blue ? <ArrowsClockwise size={16} weight="bold" /> : <ArrowsCounterClockwise size={16} weight="bold" />}
-      </span>
-      <span style={{ fontSize: 10, fontWeight: 800, color: blue ? '#0079b0' : '#25826f' }}>{kind}1</span>
+    <div
+      style={{
+        position: 'relative', background: '#fff', borderRadius: 22, padding: '8px 13px', fontSize: 11.5, fontWeight: 700,
+        color: style.color, whiteSpace: 'nowrap', boxShadow: data.isPendingSource ? '0 0 0 3px #dcefff' : style.shadow,
+        cursor: data.editing ? 'text' : 'grab', border: style.border,
+      }}
+    >
+      <Handle type="source" position={Position.Top} id="a" style={{ opacity: 0, pointerEvents: 'none' }} />
+      <Handle type="target" position={Position.Bottom} id="b" style={{ opacity: 0, pointerEvents: 'none' }} />
+      {data.editing ? (
+        <input
+          autoFocus
+          className="nodrag nopan"
+          defaultValue={data.label}
+          onFocus={e => e.target.select()}
+          onBlur={e => data.onCommit(e.target.value)}
+          onKeyDown={e => {
+            if (e.key === 'Enter') data.onCommit((e.target as HTMLInputElement).value);
+            if (e.key === 'Escape') data.onCancel();
+          }}
+          style={{ fontSize: 11.5, fontWeight: 700, color: style.color, background: 'transparent', border: 'none', borderBottom: `1px solid ${style.color}`, outline: 'none', width: 130 }}
+        />
+      ) : (
+        <span>{data.label}</span>
+      )}
     </div>
   );
 }
 
-function LoopNode({ left, top, label, tone }: { left: number; top: number; label: string; tone: 'neutral' | 'blue' | 'teal' }) {
-  const styles = {
-    neutral: { border: '1.5px solid #d4dbe1', color: '#2c2e35', shadow: '0 2px 8px rgba(0,0,0,.07)' },
-    blue: { border: '1.5px solid #008ecd', color: '#0d3f57', shadow: '0 3px 10px rgba(0,142,205,.16)' },
-    teal: { border: '1.5px solid #2ea38e', color: '#1f5f4e', shadow: '0 3px 10px rgba(46,163,142,.16)' },
-  }[tone];
+interface LoopEdgeData extends Record<string, unknown> {
+  polarity: Polarity;
+  color: 'blue' | 'teal' | 'neutral';
+}
+
+function LoopFlowEdge({ id, source, target, data }: EdgeProps<Edge<LoopEdgeData>>) {
+  const sourceNode = useInternalNode(source);
+  const targetNode = useInternalNode(target);
+  if (!sourceNode || !targetNode) return null;
+
+  const sw = sourceNode.measured?.width ?? 120;
+  const sh = sourceNode.measured?.height ?? 34;
+  const tw = targetNode.measured?.width ?? 120;
+  const th = targetNode.measured?.height ?? 34;
+  const scx = sourceNode.internals.positionAbsolute.x + sw / 2;
+  const scy = sourceNode.internals.positionAbsolute.y + sh / 2;
+  const tcx = targetNode.internals.positionAbsolute.x + tw / 2;
+  const tcy = targetNode.internals.positionAbsolute.y + th / 2;
+  const dx = tcx - scx;
+  const dy = tcy - scy;
+  const s = rectIntersection(scx, scy, sw / 2, sh / 2, dx, dy);
+  const t = rectIntersection(tcx, tcy, tw / 2, th / 2, -dx, -dy);
+
+  // Deterministic curvature per edge so parallel links fan out instead of overlapping.
+  const seed = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const curvature = 0.18 + ((seed % 5) * 0.03);
+  const { path, labelX, labelY } = curvedEdgePath(s.x, s.y, t.x, t.y, curvature);
+
+  const tone = data?.color ?? 'neutral';
+  const stroke = tone === 'blue' ? '#008ecd' : tone === 'teal' ? '#2ea38e' : '#9b9c9f';
+  const chipColor = data?.polarity === '-' ? '#c25a48' : stroke;
+  const chipTextColor = data?.polarity === '-' ? '#c25a48' : tone === 'blue' ? '#0079b0' : tone === 'teal' ? '#25826f' : '#5b5f67';
+
   return (
-    <div style={{
-      position: 'absolute', left, top, transform: 'translate(-50%,-50%)', background: '#fff', borderRadius: 22,
-      padding: '8px 13px', fontSize: 11.5, fontWeight: 700, color: styles.color, whiteSpace: 'nowrap',
-      boxShadow: styles.shadow, cursor: 'grab', border: styles.border,
-    }}>{label}</div>
+    <>
+      <BaseEdge id={id} path={path} style={{ stroke, strokeWidth: 2 }} markerEnd={`url(#loop-arrow-${tone})`} />
+      <EdgeLabelRenderer>
+        <div
+          style={{
+            position: 'absolute', transform: `translate(-50%,-50%) translate(${labelX}px,${labelY}px)`,
+            width: 18, height: 18, borderRadius: '50%', background: '#fff', border: `1.5px solid ${chipColor}`,
+            color: chipTextColor, fontSize: data?.polarity === '-' ? 13 : 12, fontWeight: 700,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none',
+          }}
+          className="nodrag nopan"
+        >
+          {data?.polarity ?? '+'}
+        </div>
+      </EdgeLabelRenderer>
+    </>
+  );
+}
+
+const rfNodeTypes = { loopNode: LoopFlowNode };
+const rfEdgeTypes = { loopEdge: LoopFlowEdge };
+
+function LoopArrowDefs() {
+  return (
+    <svg width={0} height={0} style={{ position: 'absolute' }}>
+      <defs>
+        <marker id="loop-arrow-blue" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#008ecd" /></marker>
+        <marker id="loop-arrow-teal" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2ea38e" /></marker>
+        <marker id="loop-arrow-neutral" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#9b9c9f" /></marker>
+      </defs>
+    </svg>
+  );
+}
+
+function LoopCanvas({ graph, loops }: { graph: LoopGraph; loops: ReturnType<typeof detectLoops> }) {
+  const { addLoopNode, renameLoopNode, moveLoopNode, addLoopLink } = useAppState();
+  const { zoomIn, zoomOut } = useReactFlow();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [linkMode, setLinkMode] = useState(false);
+  const [pendingSource, setPendingSource] = useState<string | null>(null);
+  const [pendingTarget, setPendingTarget] = useState<string | null>(null);
+
+  const { nodeTone, linkColor } = loopColors(loops);
+
+  const rfNodes: Node<LoopNodeData>[] = graph.nodes.map(n => ({
+    id: n.id,
+    type: 'loopNode',
+    position: { x: n.x, y: n.y },
+    data: {
+      label: n.label,
+      tone: nodeTone.get(n.id) ?? 'neutral',
+      editing: editingId === n.id,
+      isPendingSource: pendingSource === n.id,
+      onStartRename: () => setEditingId(n.id),
+      onCommit: (v: string) => { renameLoopNode(loopGraphId, n.id, v); setEditingId(null); },
+      onCancel: () => setEditingId(null),
+    },
+  }));
+
+  const rfEdges: Edge<LoopEdgeData>[] = graph.links.map(l => ({
+    id: l.id,
+    source: l.from,
+    target: l.to,
+    type: 'loopEdge',
+    data: { polarity: l.polarity, color: linkColor.get(l.id) ?? 'neutral' },
+  }));
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(rfNodes);
+  const [edges, setEdges] = useEdgesState(rfEdges);
+
+  useEffect(() => { setNodes(rfNodes); }, [graph, loops]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setEdges(rfEdges); }, [graph, loops]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const sourceLabel = graph.nodes.find(n => n.id === pendingSource)?.label;
+  const targetLabel = graph.nodes.find(n => n.id === pendingTarget)?.label;
+
+  const exitLinkMode = () => { setLinkMode(false); setPendingSource(null); setPendingTarget(null); };
+
+  const handleNodeClick = (_: unknown, node: Node) => {
+    if (!linkMode) { setEditingId(node.id); return; }
+    if (!pendingSource) { setPendingSource(node.id); return; }
+    if (node.id === pendingSource) { setPendingSource(null); return; }
+    setPendingTarget(node.id);
+  };
+
+  const finishLink = (polarity: Polarity) => {
+    if (pendingSource && pendingTarget) addLoopLink(loopGraphId, pendingSource, pendingTarget, polarity);
+    exitLinkMode();
+  };
+
+  return (
+    <Card style={{ padding: '16px 18px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 4, background: '#f5f7f9', border: '1px solid #e3e6ea', borderRadius: 9, padding: 3 }}>
+          <button
+            onClick={() => setEditingId(addLoopNode(loopGraphId))}
+            style={{ border: '1px solid #e3e6ea', background: '#fff', borderRadius: 6, padding: '5px 9px', fontSize: 11.5, fontWeight: 600, color: '#5b5f67', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}
+          ><PlusCircle size={13} /> Element</button>
+          <button
+            onClick={() => (linkMode ? exitLinkMode() : (setLinkMode(true), setEditingId(null)))}
+            style={{ border: linkMode ? '1px solid #008ecd' : 'none', background: linkMode ? '#eef7fc' : 'transparent', borderRadius: 6, padding: '5px 9px', fontSize: 11.5, fontWeight: 600, color: linkMode ? '#0079b0' : '#5b5f67', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}
+          ><ArrowBendUpRight size={13} /> Link</button>
+        </div>
+        <div style={{ display: 'flex', gap: 4, background: '#f5f7f9', border: '1px solid #e3e6ea', borderRadius: 9, padding: 3 }}>
+          <button onClick={() => zoomIn()} style={{ border: '1px solid #cfe8f6', background: '#fff', borderRadius: 6, width: 26, height: 26, fontSize: 14, fontWeight: 700, color: '#0079b0', cursor: 'pointer' }}>+</button>
+          <button onClick={() => zoomOut()} style={{ border: 'none', background: 'transparent', borderRadius: 6, width: 26, height: 26, fontSize: 15, fontWeight: 700, color: '#5b5f67', cursor: 'pointer' }}>−</button>
+        </div>
+        <span style={{ marginLeft: 'auto', fontSize: 11.5, fontWeight: 600, color: '#25826f', background: '#eef6f3', border: '1px solid #cfe9e2', borderRadius: 20, padding: '4px 11px' }}>
+          Loops found: <b>{loopBadgeText(loops)}</b>
+        </span>
+      </div>
+
+      {linkMode && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, background: '#eef7fc', border: '1px solid #cfe8f6', borderRadius: 9, padding: '8px 12px', fontSize: 12, color: '#0d3f57' }}>
+          {!pendingSource && <span>Click an element to start a link.</span>}
+          {pendingSource && !pendingTarget && <span>Click another element to connect <b>{sourceLabel}</b> to.</span>}
+          {pendingTarget && (
+            <>
+              <span><b>{sourceLabel}</b> → <b>{targetLabel}</b> — pick a polarity:</span>
+              <button onClick={() => finishLink('+')} style={{ width: 24, height: 24, borderRadius: '50%', border: '1.5px solid #008ecd', background: '#fff', color: '#0079b0', fontWeight: 700, cursor: 'pointer' }}>+</button>
+              <button onClick={() => finishLink('-')} style={{ width: 24, height: 24, borderRadius: '50%', border: '1.5px solid #c25a48', background: '#fff', color: '#c25a48', fontWeight: 700, cursor: 'pointer' }}>−</button>
+            </>
+          )}
+          <button onClick={exitLinkMode} style={{ marginLeft: 'auto', border: 'none', background: 'transparent', color: '#5b5f67', fontSize: 11.5, fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+        </div>
+      )}
+
+      <div style={{ borderRadius: 12, border: '1px solid #eef0f2', height: 420, background: '#fff' }}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onNodeClick={handleNodeClick}
+          onNodeDragStop={(_, node) => moveLoopNode(loopGraphId, node.id, node.position.x, node.position.y)}
+          nodeTypes={rfNodeTypes}
+          edgeTypes={rfEdgeTypes}
+          fitView
+          minZoom={0.4}
+          maxZoom={2}
+          proOptions={{ hideAttribution: false }}
+          panOnDrag
+          nodesConnectable={false}
+        >
+          <LoopArrowDefs />
+          <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="#e7ebee" />
+        </ReactFlow>
+      </div>
+    </Card>
   );
 }
 
 function FeedbackLoopsTab() {
+  const { loopGraphs, deleteLoopNode } = useAppState();
+  const graph = loopGraphs[loopGraphId];
+  const loops = useMemo(() => detectLoops(graph), [graph]);
+  const { nodeTone } = loopColors(loops);
+  const firstR = loops.find(l => l.type === 'R');
+  const firstB = loops.find(l => l.type === 'B');
+
   return (
     <div className="fb-screen fb-grid2" style={{ display: 'grid', gridTemplateColumns: '1.55fr 1fr', gap: 18 }}>
-      <Card style={{ padding: '16px 18px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', gap: 4, background: '#f5f7f9', border: '1px solid #e3e6ea', borderRadius: 9, padding: 3 }}>
-            <button style={{ border: '1px solid #e3e6ea', background: '#fff', borderRadius: 6, padding: '5px 9px', fontSize: 11.5, fontWeight: 600, color: '#5b5f67', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}><PlusCircle size={13} /> Element</button>
-            <button style={{ border: 'none', background: 'transparent', borderRadius: 6, padding: '5px 9px', fontSize: 11.5, fontWeight: 600, color: '#5b5f67', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}><ArrowBendUpRight size={13} /> Link</button>
-          </div>
-          <div style={{ display: 'flex', gap: 4, background: '#f5f7f9', border: '1px solid #e3e6ea', borderRadius: 9, padding: 3 }}>
-            <button style={{ border: '1px solid #cfe8f6', background: '#fff', borderRadius: 6, width: 26, height: 26, fontSize: 14, fontWeight: 700, color: '#0079b0', cursor: 'pointer' }}>+</button>
-            <button style={{ border: 'none', background: 'transparent', borderRadius: 6, width: 26, height: 26, fontSize: 15, fontWeight: 700, color: '#5b5f67', cursor: 'pointer' }}>−</button>
-          </div>
-          <span style={{ marginLeft: 'auto', fontSize: 11.5, fontWeight: 600, color: '#25826f', background: '#eef6f3', border: '1px solid #cfe9e2', borderRadius: 20, padding: '4px 11px' }}>Loops found: <b>R1</b> · <b>B1</b></span>
-        </div>
-
-        <div style={{ overflowX: 'auto', borderRadius: 12, background: 'radial-gradient(circle at 1px 1px,#e7ebee 1px,transparent 0)', backgroundSize: '22px 22px', border: '1px solid #eef0f2' }}>
-          <div style={{ position: 'relative', width: 620, height: 420, margin: 'auto' }}>
-            <svg viewBox="0 0 620 420" style={{ position: 'absolute', inset: 0, width: 620, height: 420, overflow: 'visible' }}>
-              <defs>
-                <marker id="ahBlue" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#008ecd" /></marker>
-                <marker id="ahTeal" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2ea38e" /></marker>
-              </defs>
-              <path d="M 288,66 Q 410,66 452,126" fill="none" stroke="#008ecd" strokeWidth="2" markerEnd="url(#ahBlue)" />
-              <path d="M 476,186 Q 448,286 374,308" fill="none" stroke="#008ecd" strokeWidth="2" markerEnd="url(#ahBlue)" />
-              <path d="M 298,312 Q 172,214 226,90" fill="none" stroke="#008ecd" strokeWidth="2" markerEnd="url(#ahBlue)" />
-              <path d="M 452,178 Q 300,404 170,350" fill="none" stroke="#2ea38e" strokeWidth="2" markerEnd="url(#ahTeal)" />
-              <path d="M 114,318 Q 66,250 80,202" fill="none" stroke="#2ea38e" strokeWidth="2" markerEnd="url(#ahTeal)" />
-              <path d="M 128,160 Q 300,118 440,138" fill="none" stroke="#2ea38e" strokeWidth="2" markerEnd="url(#ahTeal)" />
-            </svg>
-
-            <PolarityChip left={372} top={50} sign="+" color="blue" />
-            <PolarityChip left={470} top={250} sign="+" color="blue" />
-            <PolarityChip left={182} top={186} sign="+" color="blue" />
-            <PolarityChip left={300} top={392} sign="+" color="teal" />
-            <PolarityChip left={66} top={250} sign="-" color="warn" />
-            <PolarityChip left={300} top={120} sign="+" color="teal" />
-
-            <LoopBadge left={362} top={180} kind="R" />
-            <LoopBadge left={196} top={268} kind="B" />
-
-            <LoopNode left={250} top={55} label="New signups" tone="neutral" />
-            <LoopNode left={475} top={150} label="Active users" tone="blue" />
-            <LoopNode left={335} top={325} label="Word of mouth" tone="neutral" />
-            <LoopNode left={130} top={345} label="Support load" tone="neutral" />
-            <LoopNode left={92} top={170} label="Onboarding quality" tone="teal" />
-          </div>
-        </div>
-      </Card>
+      <ReactFlowProvider>
+        <LoopCanvas graph={graph} loops={loops} />
+      </ReactFlowProvider>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <Card style={{ padding: 18, borderRadius: 14 }}>
@@ -267,35 +613,81 @@ function FeedbackLoopsTab() {
               <span style={{ fontSize: 12.5, lineHeight: 1.4 }}>moves the <b>opposite</b> direction</span>
             </div>
           </div>
+          <div style={{ fontSize: 10.5, color: '#9b9c9f', marginTop: 8 }}>Click an element to rename it; select a link and press Delete to remove it.</div>
+        </Card>
+
+        <Card style={{ padding: 18, borderRadius: 14 }}>
+          <h4 style={{ margin: '0 0 10px', fontSize: 13.5, fontWeight: 700 }}>How loops actually behave</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <p style={{ margin: 0, fontSize: 12, lineHeight: 1.55, color: '#4a4d55' }}>
+              <b style={{ color: '#0079b0' }}>Reinforcing loops</b> are self-amplifying: a change compounds in the same direction each time around, like compound interest or a vicious cycle. Left alone, they accelerate without limit.
+            </p>
+            <p style={{ margin: 0, fontSize: 12, lineHeight: 1.55, color: '#4a4d55' }}>
+              <b style={{ color: '#25826f' }}>Balancing loops</b> are goal-seeking: they sense a <b>gap</b> between the current state and a <b>goal</b>, then trigger a <b>corrective action</b> that closes it — the way a thermostat, an inventory system, or a budget stays in check. A <b>delay</b> in that correction is often what makes a system overshoot or oscillate.
+            </p>
+            <div style={{ background: '#f6f8fa', border: '1px solid #eef0f2', borderRadius: 9, padding: '9px 11px' }}>
+              <div style={{ fontSize: 10.5, fontWeight: 700, color: '#83878f', letterSpacing: '.03em', marginBottom: 3 }}>HOW THIS TOOL LABELS A LOOP</div>
+              <p style={{ margin: 0, fontSize: 11.5, lineHeight: 1.5, color: '#5b5f67' }}>
+                Trace the loop and count its <b style={{ color: '#c25a48' }}>−</b> links. An even number (including zero) means every step reinforces the last — <b style={{ color: '#0079b0' }}>R</b>. An odd number means one link flips the signal, so the loop corrects itself — <b style={{ color: '#25826f' }}>B</b>.
+              </p>
+            </div>
+            <a
+              href="https://thesystemsthinker.com/balancing-loop-basics/"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontSize: 11, fontWeight: 600, color: '#0079b0', textDecoration: 'underline' }}
+            >
+              More on loop basics at The Systems Thinker →
+            </a>
+          </div>
         </Card>
 
         <Card style={{ padding: 18, borderRadius: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 11 }}>
             <h4 style={{ margin: 0, fontSize: 13.5, fontWeight: 700 }}>Elements</h4>
-            <span style={{ fontSize: 11, color: '#9b9c9f' }}>5</span>
+            <span style={{ fontSize: 11, color: '#9b9c9f' }}>{graph.nodes.length}</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {[
-              { label: 'Active users', dot: '#008ecd' },
-              { label: 'New signups', dot: '#9b9c9f' },
-              { label: 'Word of mouth', dot: '#9b9c9f' },
-              { label: 'Support load', dot: '#9b9c9f' },
-              { label: 'Onboarding quality', dot: '#2ea38e' },
-            ].map(el => (
-              <div key={el.label} className="fb-hover fb-hover-bg" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, padding: '6px 8px', borderRadius: 7 }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: el.dot }} />
-                {el.label}
-              </div>
-            ))}
+            {graph.nodes.map(n => {
+              const tone = nodeTone.get(n.id);
+              const dot = tone === 'blue' ? '#008ecd' : tone === 'teal' ? '#2ea38e' : '#9b9c9f';
+              return (
+                <div key={n.id} className="fb-hover fb-hover-bg" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, padding: '6px 8px', borderRadius: 7 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: dot, flex: '0 0 auto' }} />
+                  <span style={{ flex: 1 }}>{n.label}</span>
+                  <button
+                    onClick={() => deleteLoopNode(loopGraphId, n.id)}
+                    style={{ border: 'none', background: 'transparent', color: '#b0b3b8', cursor: 'pointer', padding: 0, display: 'flex' }}
+                    title="Delete"
+                  >
+                    <X size={11} />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </Card>
 
         <div style={{ background: '#eef7fc', border: '1px solid #cfe8f6', borderRadius: 14, padding: 16 }}>
           <div style={{ fontSize: 12.5, fontWeight: 700, color: '#0d3f57', marginBottom: 4 }}>What this tells you</div>
-          <p style={{ margin: 0, fontSize: 12, color: '#33607a', lineHeight: 1.5 }}>
-            <b>R1</b> is your growth engine — but <b>B1</b> caps it: as users grow, support load rises and onboarding quality drops. That's a{' '}
-            <ArchLink id="limits">Limits to Growth</ArchLink> archetype.
-          </p>
+          {firstR && firstB ? (
+            <p style={{ margin: 0, fontSize: 12, color: '#33607a', lineHeight: 1.5 }}>
+              <b>{firstR.id}</b> is a reinforcing loop — but <b>{firstB.id}</b> caps it: a balancing loop shares an element with it, pulling the growth back down. That's a{' '}
+              <ArchLink id="limits">Limits to Growth</ArchLink> archetype.
+            </p>
+          ) : firstR ? (
+            <p style={{ margin: 0, fontSize: 12, color: '#33607a', lineHeight: 1.5 }}>
+              <b>{firstR.id}</b> is a reinforcing loop with no balancing loop yet — it will keep compounding in whichever direction it's currently moving.
+            </p>
+          ) : firstB ? (
+            <p style={{ margin: 0, fontSize: 12, color: '#33607a', lineHeight: 1.5 }}>
+              <b>{firstB.id}</b> is a balancing loop — it will self-correct toward whatever it's regulating.
+            </p>
+          ) : (
+            <p style={{ margin: 0, fontSize: 12, color: '#33607a', lineHeight: 1.5 }}>
+              No closed loops yet. Add a link that leads back to an earlier element to form one.
+            </p>
+          )}
         </div>
       </div>
     </div>

@@ -5,7 +5,6 @@ import { Concepts } from './screens/Concepts';
 import { Workspace } from './screens/Workspace';
 import { Tests } from './screens/Tests';
 import { Progress } from './screens/Progress';
-import { Team } from './screens/Team';
 import { Systems } from './screens/Systems';
 
 function Screens() {
@@ -17,7 +16,6 @@ function Screens() {
       {screen === 'workspace' && <Workspace />}
       {screen === 'tests' && <Tests />}
       {screen === 'progress' && <Progress />}
-      {screen === 'team' && <Team />}
       {screen === 'systems' && <Systems />}
     </Layout>
   );

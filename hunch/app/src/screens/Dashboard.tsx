@@ -1,10 +1,10 @@
 import {
-  Stack, TestTube, ListChecks, SealCheck, ArrowUp, ArrowRight, DotsThree, Funnel, ChartBar,
+  Stack, TestTube, ListChecks, SealCheck, ArrowUp, ArrowRight, ChartBar,
   SneakerMove, HandWaving, CompassTool, FirstAid, Lightning, Users,
 } from '@phosphor-icons/react';
 import { useAppState } from '../state/AppState';
-import { concepts, memberById, tasks, activity } from '../data/seed';
-import { Avatar, Card, Chip, SegmentBar, ThinBar } from '../components/ui';
+import { concepts, tasks } from '../data/seed';
+import { Card, Chip, SegmentBar, ThinBar } from '../components/ui';
 import type { HomeVariant } from '../types';
 
 const iconMap: Record<string, React.ElementType> = { SneakerMove, HandWaving, CompassTool, FirstAid, Lightning, Users };
@@ -100,11 +100,10 @@ export function Dashboard() {
                 Value / Effort matrix <ArrowRight size={12} weight="bold" />
               </button>
             </div>
-            <p className="serif" style={{ margin: '0 0 16px', fontSize: 12.5, color: '#83878f', fontStyle: 'italic' }}>Each concept moves through the five steps. Owners shown at right.</p>
+            <p className="serif" style={{ margin: '0 0 16px', fontSize: 12.5, color: '#83878f', fontStyle: 'italic' }}>Each concept moves through the five steps.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {concepts.filter(c => !c.shelved).map(c => {
                 const Icon = iconMap[c.icon];
-                const owner = memberById(c.ownerId);
                 const cs = chipStyle[c.accent];
                 return (
                   <div key={c.id} onClick={() => go('workspace')} className="fb-hover fb-hover-row" style={{ border: '1px solid #e7eaee', borderRadius: 12, padding: '13px 14px', cursor: 'pointer' }}>
@@ -117,7 +116,6 @@ export function Dashboard() {
                         <div style={{ fontSize: 11.5, color: '#9b9c9f' }}>{c.subtitle}</div>
                       </div>
                       <Chip color={cs.color} bg={cs.bg} border={cs.border}>{c.stepLabel}</Chip>
-                      <Avatar initials={owner.initials} color={owner.color} />
                     </div>
                     <SegmentBar segments={c.segments} />
                   </div>
@@ -126,49 +124,27 @@ export function Dashboard() {
             </div>
           </Card>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-            <Card style={{ padding: 19 }}>
-              <h3 style={{ margin: '0 0 13px', fontSize: 15, fontWeight: 700 }}>Up next for you</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {tasks.map(t => (
-                  <div key={t.id} style={{ display: 'flex', gap: 11, alignItems: 'flex-start' }}>
-                    <span style={{
-                      width: 20, height: 20, borderRadius: 6, flex: '0 0 auto', marginTop: 1,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      background: t.done ? '#2ea38e' : 'transparent',
-                      border: t.done ? 'none' : '1.5px solid #c9cbce',
-                    }}>
-                      {t.done && <span style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>✓</span>}
-                    </span>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: t.done ? '#9b9c9f' : undefined, textDecoration: t.done ? 'line-through' : 'none' }}>{t.label}</div>
-                      <div style={{ fontSize: 11.5, color: '#9b9c9f' }}>{t.meta}</div>
-                    </div>
+          <Card style={{ padding: 19 }}>
+            <h3 style={{ margin: '0 0 13px', fontSize: 15, fontWeight: 700 }}>Up next for you</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {tasks.map(t => (
+                <div key={t.id} style={{ display: 'flex', gap: 11, alignItems: 'flex-start' }}>
+                  <span style={{
+                    width: 20, height: 20, borderRadius: 6, flex: '0 0 auto', marginTop: 1,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: t.done ? '#2ea38e' : 'transparent',
+                    border: t.done ? 'none' : '1.5px solid #c9cbce',
+                  }}>
+                    {t.done && <span style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>✓</span>}
+                  </span>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: t.done ? '#9b9c9f' : undefined, textDecoration: t.done ? 'line-through' : 'none' }}>{t.label}</div>
+                    <div style={{ fontSize: 11.5, color: '#9b9c9f' }}>{t.meta}</div>
                   </div>
-                ))}
-              </div>
-            </Card>
-            <Card style={{ padding: 19, flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 13 }}>
-                <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Team activity</h3>
-                <DotsThree size={18} color="#9b9c9f" />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {activity.map(a => {
-                  const m = memberById(a.memberId);
-                  return (
-                    <div key={a.id} style={{ display: 'flex', gap: 11 }}>
-                      <Avatar initials={m.initials} color={m.color} size={28} />
-                      <div style={{ fontSize: 12.5, color: '#4a4d55', lineHeight: 1.45 }}>
-                        <span dangerouslySetInnerHTML={{ __html: a.html.replace(/class="link"/g, 'style="color:#0079b0"') }} />
-                        <div style={{ fontSize: 11, color: '#b0b3b8', marginTop: 2 }}>{a.when}</div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </Card>
-          </div>
+                </div>
+              ))}
+            </div>
+          </Card>
         </div>
       </div>
     );
@@ -188,7 +164,6 @@ export function Dashboard() {
           <span style={{ fontSize: 13, fontWeight: 600, color: '#6b6e76' }}>Pipeline</span>
           <span style={{ fontSize: 12, color: '#9b9c9f' }}>— concepts flowing through the five steps. Drag to advance.</span>
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-            <span style={{ fontSize: 11.5, fontWeight: 600, background: '#fff', border: '1px solid #e3e6ea', borderRadius: 20, padding: '4px 11px', color: '#5b5f67', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Funnel size={12} /> All owners</span>
             <span style={{ fontSize: 11.5, fontWeight: 600, background: '#fff', border: '1px solid #e3e6ea', borderRadius: 20, padding: '4px 11px', color: '#5b5f67' }}>This quarter</span>
           </div>
         </div>
@@ -204,16 +179,12 @@ export function Dashboard() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {items.map(c => {
-                    const owner = memberById(c.ownerId);
                     const cs = chipStyle[c.accent];
                     return (
                       <div key={c.id} onClick={() => go('workspace')} className="fb-hover fb-hover-row" style={{ background: '#fff', border: '1px solid #e7eaee', borderRadius: 12, padding: 13, cursor: 'pointer' }}>
                         <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 3 }}>{c.name}</div>
                         <div style={{ fontSize: 11, color: '#9b9c9f', marginBottom: 9 }}>{c.subtitle}</div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <Chip color={cs.color} bg={cs.bg} border="transparent" style={{ border: 'none', padding: '2px 8px', fontSize: 10.5 }}>{c.quadrantLabel}</Chip>
-                          <Avatar initials={owner.initials} color={owner.color} size={22} />
-                        </div>
+                        <Chip color={cs.color} bg={cs.bg} border="transparent" style={{ border: 'none', padding: '2px 8px', fontSize: 10.5 }}>{c.quadrantLabel}</Chip>
                       </div>
                     );
                   })}

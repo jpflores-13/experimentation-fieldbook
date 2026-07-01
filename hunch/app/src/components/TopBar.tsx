@@ -1,4 +1,4 @@
-import { MagnifyingGlass, Bell, Plus } from '@phosphor-icons/react';
+import { MagnifyingGlass, Bell, Plus, Printer } from '@phosphor-icons/react';
 import { useAppState } from '../state/AppState';
 import type { Screen } from '../types';
 
@@ -8,7 +8,6 @@ const titles: Record<Screen, [string, string]> = {
   workspace: ['Guided Workflow', 'Easykicks · move through the five steps'],
   tests: ['Tests', 'Every test across your concepts — Test Digest & results'],
   progress: ['Progress Tracker', 'Milestones across all five steps'],
-  team: ['Members & Activity', 'Owners, comments, and the testing journey'],
   systems: ['Systems maps', 'Map the system around your idea — supports, loops & archetypes'],
 };
 
@@ -29,6 +28,13 @@ export function TopBar() {
       <button className="fb-hover fb-hover-bg" style={{ position: 'relative', width: 40, height: 40, borderRadius: 10, border: '1px solid #e3e6ea', background: '#fff', cursor: 'pointer', color: '#5b5f67' }}>
         <Bell size={18} style={{ display: 'block', margin: '0 auto' }} />
         <span style={{ position: 'absolute', top: 9, right: 10, width: 7, height: 7, borderRadius: '50%', background: '#008ecd', border: '1.5px solid #fff' }} />
+      </button>
+      <button
+        onClick={() => window.print()}
+        className="fb-hover fb-hover-bg"
+        style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#fff', border: '1px solid #e3e6ea', borderRadius: 10, padding: '9px 13px', fontSize: 12.5, fontWeight: 600, color: '#5b5f67', cursor: 'pointer', whiteSpace: 'nowrap' }}
+      >
+        <Printer size={16} /> Export PDF
       </button>
       <button
         className="fb-btn-primary"

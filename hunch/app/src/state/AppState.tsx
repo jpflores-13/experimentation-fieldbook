@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import type { Screen, HomeVariant, Step, SysTab } from '../types';
+import type { Screen, HomeVariant, Step, SysTab, SupportMap, SupportNote, Ring, StarRating, LoopGraph, Polarity } from '../types';
+import { defaultSupportMaps, defaultLoopGraphs } from '../data/systemsSeed';
 
 const STORAGE_KEY = 'fb_app_state_v1';
 
@@ -14,6 +15,8 @@ export interface PersistedState {
   fidelity: number;
   sysTab: SysTab;
   sysArch: string | null;
+  supportMaps: Record<string, SupportMap>;
+  loopGraphs: Record<string, LoopGraph>;
 }
 
 const defaultState: PersistedState = {
@@ -27,6 +30,8 @@ const defaultState: PersistedState = {
   fidelity: 42,
   sysTab: 'support',
   sysArch: null,
+  supportMaps: defaultSupportMaps,
+  loopGraphs: defaultLoopGraphs,
 };
 
 function loadInitial(): PersistedState {
@@ -39,6 +44,28 @@ function loadInitial(): PersistedState {
   return defaultState;
 }
 
+const starCycle: StarRating[] = ['helpful', 'neutral', 'unhelpful'];
+
+// Default spawn position for a newly-added note: spread notes around each
+// ring's band so repeated adds don't stack exactly on top of each other.
+const ringRadius: Record<Exclude<Ring, 'role'>, number> = { responsibility: 27, need: 33, resource: 42, wish: 47 };
+const ringBaseAngle: Record<Exclude<Ring, 'role'>, number> = { responsibility: 200, need: 20, resource: 300, wish: 100 };
+
+function nextRingPosition(ring: Exclude<Ring, 'role'>, existingCount: number) {
+  const radius = ringRadius[ring];
+  const angle = ((ringBaseAngle[ring] + existingCount * 55) % 360) * (Math.PI / 180);
+  const x = Math.min(96, Math.max(4, 50 + radius * Math.cos(angle)));
+  const y = Math.min(96, Math.max(4, 50 + radius * Math.sin(angle)));
+  return { x, y };
+}
+
+const ringDefaultLabel: Record<Exclude<Ring, 'role'>, string> = {
+  responsibility: 'New responsibility',
+  need: 'New need',
+  resource: 'New resource',
+  wish: 'New wish',
+};
+
 interface AppStateValue extends PersistedState {
   go: (screen: Screen) => void;
   setHome: (home: HomeVariant) => void;
@@ -50,6 +77,17 @@ interface AppStateValue extends PersistedState {
   setFidelity: (v: number) => void;
   setSysTab: (t: SysTab) => void;
   setSysArch: (id: string | null) => void;
+  addSupportNote: (mapId: string, ring: Exclude<Ring, 'role'>) => string;
+  renameSupportNote: (mapId: string, noteId: string, text: string) => void;
+  moveSupportNote: (mapId: string, noteId: string, x: number, y: number) => void;
+  deleteSupportNote: (mapId: string, noteId: string) => void;
+  cycleSupportNoteStar: (mapId: string, noteId: string) => void;
+  addLoopNode: (graphId: string) => string;
+  renameLoopNode: (graphId: string, nodeId: string, label: string) => void;
+  moveLoopNode: (graphId: string, nodeId: string, x: number, y: number) => void;
+  deleteLoopNode: (graphId: string, nodeId: string) => void;
+  addLoopLink: (graphId: string, from: string, to: string, polarity: Polarity) => string;
+  deleteLoopLink: (graphId: string, linkId: string) => void;
 }
 
 const AppStateContext = createContext<AppStateValue | null>(null);
@@ -67,6 +105,26 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
 
   const patch = (p: Partial<PersistedState>) => setState(s => ({ ...s, ...p }));
 
+  const updateMap = (mapId: string, fn: (m: SupportMap) => SupportMap) => {
+    setState(s => {
+      const current = s.supportMaps[mapId];
+      if (!current) return s;
+      return { ...s, supportMaps: { ...s.supportMaps, [mapId]: fn(current) } };
+    });
+  };
+
+  const updateNote = (mapId: string, noteId: string, fn: (n: SupportNote) => SupportNote) => {
+    updateMap(mapId, m => ({ ...m, notes: m.notes.map(n => (n.id === noteId ? fn(n) : n)) }));
+  };
+
+  const updateGraph = (graphId: string, fn: (g: LoopGraph) => LoopGraph) => {
+    setState(s => {
+      const current = s.loopGraphs[graphId];
+      if (!current) return s;
+      return { ...s, loopGraphs: { ...s.loopGraphs, [graphId]: fn(current) } };
+    });
+  };
+
   const value: AppStateValue = {
     ...state,
     go: (screen) => patch({ screen }),
@@ -79,6 +137,63 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setFidelity: (fidelity) => patch({ fidelity }),
     setSysTab: (sysTab) => patch({ sysTab, sysArch: null }),
     setSysArch: (sysArch) => patch({ sysArch }),
+    addSupportNote: (mapId, ring) => {
+      const existingCount = state.supportMaps[mapId]?.notes.filter(n => n.ring === ring).length ?? 0;
+      const { x, y } = nextRingPosition(ring, existingCount);
+      const id = `${ring}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      const note: SupportNote = { id, ring, text: ringDefaultLabel[ring], x, y, ...(ring === 'resource' ? { star: 'neutral' as StarRating } : {}) };
+      updateMap(mapId, m => ({ ...m, notes: [...m.notes, note] }));
+      return id;
+    },
+    renameSupportNote: (mapId, noteId, text) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      updateNote(mapId, noteId, n => ({ ...n, text: trimmed }));
+    },
+    moveSupportNote: (mapId, noteId, x, y) => {
+      updateNote(mapId, noteId, n => ({ ...n, x, y }));
+    },
+    deleteSupportNote: (mapId, noteId) => {
+      updateMap(mapId, m => ({ ...m, notes: m.notes.filter(n => n.id !== noteId) }));
+    },
+    cycleSupportNoteStar: (mapId, noteId) => {
+      updateNote(mapId, noteId, n => {
+        const idx = n.star ? starCycle.indexOf(n.star) : -1;
+        const next = starCycle[(idx + 1) % starCycle.length];
+        return { ...n, star: next };
+      });
+    },
+    addLoopNode: (graphId) => {
+      const count = state.loopGraphs[graphId]?.nodes.length ?? 0;
+      const id = `n-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      const angle = (count * 47) % 360;
+      const x = 300 + 140 * Math.cos((angle * Math.PI) / 180);
+      const y = 190 + 120 * Math.sin((angle * Math.PI) / 180);
+      updateGraph(graphId, g => ({ ...g, nodes: [...g.nodes, { id, label: 'New element', x, y }] }));
+      return id;
+    },
+    renameLoopNode: (graphId, nodeId, label) => {
+      const trimmed = label.trim();
+      if (!trimmed) return;
+      updateGraph(graphId, g => ({ ...g, nodes: g.nodes.map(n => (n.id === nodeId ? { ...n, label: trimmed } : n)) }));
+    },
+    moveLoopNode: (graphId, nodeId, x, y) => {
+      updateGraph(graphId, g => ({ ...g, nodes: g.nodes.map(n => (n.id === nodeId ? { ...n, x, y } : n)) }));
+    },
+    deleteLoopNode: (graphId, nodeId) => {
+      updateGraph(graphId, g => ({
+        nodes: g.nodes.filter(n => n.id !== nodeId),
+        links: g.links.filter(l => l.from !== nodeId && l.to !== nodeId),
+      }));
+    },
+    addLoopLink: (graphId, from, to, polarity) => {
+      const id = `l-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      updateGraph(graphId, g => ({ ...g, links: [...g.links, { id, from, to, polarity }] }));
+      return id;
+    },
+    deleteLoopLink: (graphId, linkId) => {
+      updateGraph(graphId, g => ({ ...g, links: g.links.filter(l => l.id !== linkId) }));
+    },
   };
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;

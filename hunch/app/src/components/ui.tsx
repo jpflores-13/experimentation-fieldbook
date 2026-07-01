@@ -12,18 +12,6 @@ export function Card({ children, style, className, onClick }: { children: ReactN
   );
 }
 
-export function Avatar({ initials, color, size = 26, style }: { initials: string; color: string; size?: number; style?: CSSProperties }) {
-  return (
-    <span style={{
-      width: size, height: size, borderRadius: '50%', background: color, color: '#fff',
-      fontSize: size * 0.38, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center',
-      flex: '0 0 auto', ...style,
-    }}>
-      {initials}
-    </span>
-  );
-}
-
 export function Chip({ children, color = '#0079b0', bg = '#eef7fc', border = '#cfe8f6', style }: { children: ReactNode; color?: string; bg?: string; border?: string; style?: CSSProperties }) {
   return (
     <span style={{ fontSize: 11, fontWeight: 600, color, background: bg, border: `1px solid ${border}`, padding: '2px 9px', borderRadius: 20, flex: '0 0 auto', ...style }}>

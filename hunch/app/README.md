@@ -1,32 +1,36 @@
-# React + TypeScript + Vite
+# Scintilla — app
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A tool for practitioners and design-thinking students to work through *The
+Experimentation Field Book*'s five-step process, plus a Systems mapping
+workspace. Built with React + TypeScript + Vite.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev      # http://localhost:5173
+npm run build    # typecheck + production build
+npm run preview  # serve the production build
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Structure
+
+- `src/screens/` — Dashboard, Concepts, Workspace (guided workflow), Tests,
+  Progress, Systems (Support Map / Feedback Loops / Archetypes).
+- `src/components/` — shared chrome (Sidebar, TopBar, Layout) and UI
+  primitives (Card, Chip, SegmentBar, ThinBar).
+- `src/state/AppState.tsx` — all client state (screen, dashboard variant,
+  workflow step, Test Decision Flow answers, sliders, support-map notes,
+  loop graphs), the `localStorage` autosave (`fb_app_state_v1`), and the Test
+  Decision Flow recommendation logic.
+- `src/state/loopAnalysis.ts` — cycle detection for the Feedback Loops canvas
+  (finds closed loops, classifies each Reinforcing/Balancing by counting
+  negative links, even/odd).
+- `src/data/seed.ts`, `src/data/systemsSeed.ts`, `src/data/archetypes.ts` —
+  seed data for concepts/tests/tasks, the default support map + loop graph,
+  and the 8 systems archetypes.
+- `src/theme.css` — design tokens, responsive breakpoints, and the
+  `@media print` rules that power PDF export (every screen has an Export PDF
+  button in the top bar; the Guided Workflow gets a dedicated cover page +
+  five-step print layout).
+
+See the [docs guide](../guide/) for a full walkthrough of every screen, and
+[`../BRAND.md`](../BRAND.md) for logo usage.
