@@ -1,4 +1,4 @@
-import type { Concept, TestRow, TaskItem } from '../types';
+import type { Concept, TestRow } from '../types';
 
 export const concepts: Concept[] = [
   {
@@ -43,12 +43,6 @@ accent: 'slate', step: 1, stepLabel: 'Step 1 · Frame',
     segments: [0.5, 0, 0, 0, 0], value: 30, effort: 76, quadrantLabel: 'Avoid',
     statusLine: 'Shelved · failed desirability threshold', shelved: true,
   },
-];
-
-export const tasks: TaskItem[] = [
-  { id: 't1', label: 'Prioritize assumptions — Career Navigator', meta: 'Step 2 · due tomorrow', done: false },
-  { id: 't2', label: 'Build poster prototype — Easykicks', meta: 'Step 4 · this week', done: false },
-  { id: 't3', label: 'Run pretest — Welcome Host', meta: 'Step 5 · done', done: true },
 ];
 
 export const seedTests: TestRow[] = [

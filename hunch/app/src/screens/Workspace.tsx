@@ -1,10 +1,11 @@
-import { useState, type ReactNode, type CSSProperties } from 'react';
+import { useRef, useState, type ReactNode, type CSSProperties } from 'react';
 import {
-  Lightbulb, ArrowLeft, ArrowRight, Image, PlusCircle, Heart, Wrench, ChartLineUp, Check, X,
+  Lightbulb, ArrowLeft, ArrowRight, PlusCircle, Heart, Wrench, ChartLineUp, Check, X,
   Cards, ImageSquare, Package, DeviceMobile, RocketLaunch, Broadcast, Brain, ChatsCircle, Storefront, CursorClick, Flask,
+  UploadSimple, FileText, ArrowSquareOut,
 } from '@phosphor-icons/react';
 import { useAppState, recommendation } from '../state/AppState';
-import type { Step as StepNum, SnapshotRow, AssumptionCategory } from '../types';
+import type { Step as StepNum, SnapshotRow, AssumptionCategory, StoryboardFrame } from '../types';
 import { Card } from '../components/ui';
 import { formatOptions } from '../data/workspaceSeed';
 
@@ -303,10 +304,108 @@ function SnapshotRowView({ row, onChangeU1, onChangeU2 }: { row: SnapshotRow; on
   );
 }
 
+const MAX_STORYBOARD_FILE_BYTES = 4 * 1024 * 1024;
+
+function StoryboardFrameView({ frame, index, onToggleBlank, onCaptionChange, onFileChange }: {
+  frame: StoryboardFrame;
+  index: number;
+  onToggleBlank: () => void;
+  onCaptionChange: (v: string) => void;
+  onFileChange: (file: { dataUrl: string; name: string; type: string } | null) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = (file: File) => {
+    if (file.size > MAX_STORYBOARD_FILE_BYTES) {
+      window.alert('That file is too large (max 4MB) — try a smaller image or a lower-resolution scan.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => onFileChange({ dataUrl: reader.result as string, name: file.name, type: file.type });
+    reader.readAsDataURL(file);
+  };
+
+  const isImage = frame.fileType?.startsWith('image/');
+
+  return (
+    <div style={{ flex: '0 0 190px' }}>
+      <div className="fb-note" style={{ position: 'relative' }}>
+        {frame.blank ? (
+          <div onClick={onToggleBlank} style={{ cursor: 'pointer', height: 118, borderRadius: 11, border: '1.5px dashed #cdd6dc', background: '#fafbfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#b0b3b8', gap: 5 }}>
+            <PlusCircle size={24} />
+            <span style={{ fontSize: 10.5, fontWeight: 600 }}>co-create with user</span>
+          </div>
+        ) : frame.fileDataUrl && isImage ? (
+          <div style={{ position: 'relative', height: 118, borderRadius: 11, overflow: 'hidden', border: '1px solid #e3e6ea' }}>
+            <img src={frame.fileDataUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <button
+              onClick={() => onFileChange(null)}
+              title="Remove file"
+              style={{ position: 'absolute', top: 5, right: 5, background: 'rgba(44,46,53,.55)', border: 'none', borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff' }}
+            >
+              <X size={11} weight="bold" />
+            </button>
+          </div>
+        ) : frame.fileDataUrl ? (
+          <div style={{ position: 'relative', height: 118, borderRadius: 11, border: '1px solid #e3e6ea', background: '#f6f8fa', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#5b5f67', gap: 6, padding: '0 10px' }}>
+            <FileText size={24} />
+            <span style={{ fontSize: 10.5, fontWeight: 600, maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{frame.fileName}</span>
+            <a href={frame.fileDataUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 10, fontWeight: 600, color: '#0079b0', display: 'flex', alignItems: 'center', gap: 3, textDecoration: 'none' }}>
+              Open <ArrowSquareOut size={10} />
+            </a>
+            <button
+              onClick={() => onFileChange(null)}
+              title="Remove file"
+              style={{ position: 'absolute', top: 5, right: 5, background: 'rgba(0,0,0,.08)', border: 'none', borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#5b5f67' }}
+            >
+              <X size={11} />
+            </button>
+          </div>
+        ) : (
+          <div
+            onClick={() => inputRef.current?.click()}
+            style={{ height: 118, borderRadius: 11, border: '1px solid #e3e6ea', background: 'repeating-linear-gradient(45deg,#f4f6f8,#f4f6f8 8px,#eef1f4 8px,#eef1f4 16px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#83878f', gap: 5, cursor: 'pointer' }}
+          >
+            <UploadSimple size={22} />
+            <span style={{ fontSize: 10, fontWeight: 600 }}>click to upload</span>
+            <span style={{ fontSize: 9, color: '#a9aaad' }}>image or PDF</span>
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/*,application/pdf"
+              onChange={e => { const file = e.target.files?.[0]; if (file) handleFile(file); e.target.value = ''; }}
+              style={{ display: 'none' }}
+            />
+          </div>
+        )}
+        {!frame.blank && (
+          <button
+            onClick={onToggleBlank}
+            className="fb-note-delete"
+            title="Mark blank for co-creation"
+            style={{ position: 'absolute', top: 5, left: 5, background: 'rgba(44,46,53,.5)', border: 'none', borderRadius: 20, padding: '2px 7px', fontSize: 9, fontWeight: 600, color: '#fff', cursor: 'pointer', opacity: 0 }}
+          >
+            mark blank
+          </button>
+        )}
+      </div>
+      <div style={{ fontSize: 11.5, color: frame.blank ? '#b0b3b8' : '#5b5f67', marginTop: 7, lineHeight: 1.35, display: 'flex', gap: 4 }}>
+        <span>{index + 1} ·</span>
+        <EditableText
+          value={frame.caption}
+          onCommit={onCaptionChange}
+          placeholder={frame.blank ? '(blank on purpose)' : 'describe this frame…'}
+          style={{ flex: 1 }}
+        />
+      </div>
+    </div>
+  );
+}
+
 function Step1() {
   const {
     go, setStep, concepts, activeConceptId, workspaceData,
-    updateSnapshotUserLabel, updateSnapshotField, updateStoryboardCaption, toggleStoryboardBlank,
+    updateSnapshotUserLabel, updateSnapshotField, updateStoryboardCaption, toggleStoryboardBlank, setStoryboardFile,
   } = useAppState();
   const concept = concepts.find(c => c.id === activeConceptId);
   const data = workspaceData[activeConceptId];
@@ -340,33 +439,18 @@ function Step1() {
 
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 12 }}>
         <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Storyboard</h3>
-        <span className="serif" style={{ fontSize: 12, color: '#9b9c9f', fontStyle: 'italic' }}>Template 4 — click a frame to mark it blank for co-creation</span>
+        <span className="serif" style={{ fontSize: 12, color: '#9b9c9f', fontStyle: 'italic' }}>Template 4 — upload a sketch or photo per frame, or mark it blank for co-creation</span>
       </div>
       <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 6 }}>
         {storyboard.map((f, i) => (
-          <div key={f.id} style={{ flex: '0 0 190px' }}>
-            <div onClick={() => toggleStoryboardBlank(concept.id, f.id)} style={{ cursor: 'pointer' }}>
-              {f.blank ? (
-                <div style={{ height: 118, borderRadius: 11, border: '1.5px dashed #cdd6dc', background: '#fafbfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#b0b3b8', gap: 5 }}>
-                  <PlusCircle size={24} />
-                  <span style={{ fontSize: 10.5, fontWeight: 600 }}>co-create with user</span>
-                </div>
-              ) : (
-                <div style={{ height: 118, borderRadius: 11, border: '1px solid #e3e6ea', background: 'repeating-linear-gradient(45deg,#f4f6f8,#f4f6f8 8px,#eef1f4 8px,#eef1f4 16px)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a9aaad' }}>
-                  <Image size={26} />
-                </div>
-              )}
-            </div>
-            <div style={{ fontSize: 11.5, color: f.blank ? '#b0b3b8' : '#5b5f67', marginTop: 7, lineHeight: 1.35, display: 'flex', gap: 4 }}>
-              <span>{i + 1} ·</span>
-              <EditableText
-                value={f.caption}
-                onCommit={v => updateStoryboardCaption(concept.id, f.id, v)}
-                placeholder={f.blank ? '(blank on purpose)' : 'describe this frame…'}
-                style={{ flex: 1 }}
-              />
-            </div>
-          </div>
+          <StoryboardFrameView
+            key={f.id}
+            frame={f}
+            index={i}
+            onToggleBlank={() => toggleStoryboardBlank(concept.id, f.id)}
+            onCaptionChange={v => updateStoryboardCaption(concept.id, f.id, v)}
+            onFileChange={file => setStoryboardFile(concept.id, f.id, file)}
+          />
         ))}
       </div>
 

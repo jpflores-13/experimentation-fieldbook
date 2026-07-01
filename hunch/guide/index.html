@@ -109,7 +109,7 @@
     </div>
     <ul>
       <li><b>Sidebar</b> — brand lockup plus two nav groups: <em>Workspace</em> (Dashboard, Concepts, Guided Workflow, Tests, Progress) and <em>Systems</em> (Systems maps, badged "NEW"). The active item is a solid blue pill. Below 900&nbsp;px it collapses to an icon-only rail.</li>
-      <li><b>Top bar</b> — a page title and subtitle that update per screen, a search field, a notification bell, and the primary <code>New concept</code> button.</li>
+      <li><b>Top bar</b> — a page title and subtitle that update per screen, a "?" help button next to the title explaining what that screen (or workspace step, or systems tool) is for, a search field, <code>Export PDF</code>, and the primary <code>New concept</code> button.</li>
       <li><b>Content area</b> — the only thing that swaps. Each screen fades and rises in over ~0.3&nbsp;s.</li>
     </ul>
 
@@ -128,24 +128,22 @@
     <p>Here's each screen in turn — what it's for, what's in it, and how it behaves.</p>
 
     <h3 id="dashboard">Dashboard &amp; its variants</h3>
-    <p>The home screen. A segmented toggle switches between three layout directions so you can pick the one that fits how you work:</p>
+    <p>The home screen. A segmented toggle switches between two layout directions so you can pick the one that fits how you work:</p>
     <ul>
-      <li><b>A · Mission control</b> — four KPI cards over a two-column grid: a concept portfolio list (each row shows a five-segment step-progress bar) beside an "Up next" task list.</li>
+      <li><b>A · Mission control</b> — four KPI cards (active concepts, tests running, assumptions tested, validated) above a full-width concept portfolio list, each row showing a five-segment step-progress bar.</li>
       <li><b>B · Pipeline</b> — a kanban with one column per step; concept cards flow left to right as they advance.</li>
-      <li><b>C · Editorial</b> — a dark hero spotlighting the concept in the field right now, with big headline metrics and three supporting widgets.</li>
     </ul>
     <div class="chip-row">
       <span class="chip active"><i class="ph ph-squares-four"></i> A · Mission control</span>
       <span class="chip inactive"><i class="ph ph-kanban"></i> B · Pipeline</span>
-      <span class="chip inactive"><i class="ph ph-article"></i> C · Editorial</span>
     </div>
     <div class="callout tip">
       <div class="label"><i class="ph-fill ph-lightbulb" style="font-size:15px"></i> Tip</div>
-      <p>In production, ship <b>Variant A</b> as the default and treat B and C as optional home layouts — they exist so you can compare directions before committing.</p>
+      <p>In production, ship <b>Variant A</b> as the default and treat B as an optional home layout. A <b>"Read the guide"</b> link sits at the top of the Dashboard next to the layout toggle, on every variant.</p>
     </div>
 
     <h3 id="concepts">Concepts &amp; the Value/Effort Matrix</h3>
-    <p>This is Step 1's home. The signature component is the <b>Value/Effort Matrix</b>: a 2×2 with a <em>value</em> y-axis and an <em>effort</em> x-axis, split into Quick Wins, Strategic Bets, Fill-ins and Avoid. Each concept is a draggable pill positioned by its value/effort scores; the top-left "quick win" is highlighted. Beside it, an "All concepts" list gives a linear, scannable view — shelved concepts appear dimmed.</p>
+    <p>This is Step 1's home. The signature component is the <b>Value/Effort Matrix</b>: a 2×2 with a <em>value</em> y-axis and an <em>effort</em> x-axis, split into Quick Wins, Strategic Bets, Fill-ins and Avoid. Each concept is a pill positioned by its value/effort scores; click one to open it, and the top-left "quick win" is highlighted. The Matrix has its own <b>Pop out</b> button (top-right) for a larger, standalone window. Beside it, an "All concepts" list gives a linear, scannable view — hover a row to reveal a delete button, and shelved concepts appear dimmed.</p>
 
     <h3 id="workspace">Workspace &amp; the Stepper</h3>
     <p>Opening a concept enters the guided workflow. A <b>concept header</b> sits above the <b>Stepper</b> — five connected nodes for the five steps. The active node is a blue ring; completed steps show a green check. Clicking a node, or the Back / Continue buttons at the foot of each step, moves you through the flow. The header's name, organization chip, and one-line description are all click-to-edit.</p>
@@ -153,7 +151,7 @@
     <h3 id="templates">The step templates</h3>
     <p>Every box in every step is a real, per-concept record — click any label or value to edit it in place (Enter or click away commits, Escape cancels). A few highlights:</p>
     <ul>
-      <li><b>Concept Snapshot &amp; Storyboard</b> — editable rows and user-column labels; click a storyboard frame to toggle it blank (for co-creation) versus filled, and edit its caption underneath.</li>
+      <li><b>Concept Snapshot &amp; Storyboard</b> — editable rows and user-column labels. Each storyboard frame is a real upload target: click it to attach an image or PDF (max 4MB) from your computer — images preview inline, PDFs show as a file chip with an "Open" link. Hover a filled frame for a "mark blank" button to switch it back to a co-creation placeholder, and remove an attached file with the × in its corner.</li>
       <li><b>Surfacing Assumptions</b> — three colour-coded columns for Desirability (blue), Feasibility (teal) and Viability (slate); add or delete assumption chips per column.</li>
       <li><b>Assumptions → Evidence</b> — a table pairing each assumption with observable evidence, a threshold→aspirational target, and a source; add or delete rows.</li>
       <li><b>Test Decision Flow &amp; Test Digest</b> — the three funnel questions drive a live recommendation; a "Use in Test Digest" shortcut fills the recommended test type, and every Test Digest cell is editable. <b>Confirm test</b> logs the current recommendation and digest straight into the Tests tracker as "In field."</li>
@@ -162,7 +160,7 @@
     </ul>
 
     <h3 id="tests">Tests &amp; Progress</h3>
-    <p><b>Tests</b> is a cross-concept tracker — a table of every test with its type, Say/Do character, status and result, populated by whatever you've confirmed from Step 3 across all your concepts. <b>Progress</b> renders the active concept's Progress Tracker as a vertical timeline of the five steps (done, current, upcoming), plus mini progress bars for up to three other concepts.</p>
+    <p><b>Tests</b> is a cross-concept tracker — a table of every test with its type, Say/Do character, status and result, populated by whatever you've confirmed from Step 3 across all your concepts. Hover a row to reveal a delete button, or use <b>Clear all</b> next to the table heading to empty the tracker and start over. <b>Progress</b> renders the active concept's Progress Tracker as a vertical timeline of the five steps (done, current, upcoming), plus mini progress bars for up to three other concepts.</p>
 
     <h3 id="systems">Systems mapping</h3>
     <p>A dedicated <b>Systems maps</b> workspace helps you understand the <em>system</em> an idea lives in before you test it. A tab switcher holds four tools — the first three are real, editable tools, not illustrations:</p>
@@ -174,7 +172,7 @@
     </ul>
     <div class="callout tip">
       <div class="label"><i class="ph-fill ph-lightbulb" style="font-size:15px"></i> Tip</div>
-      <p>The loops and archetypes are linked — the Feedback Loops insight card names the detected R and B loops and jumps straight to the matching archetype so you know where to push. Support Map, Feedback Loops and the 5Rs Diagnostic can all pop out into their own larger window (top-right of each tool) and export straight to PDF.</p>
+      <p>The loops and archetypes are linked — the Feedback Loops insight card names the detected R and B loops and jumps straight to the matching archetype so you know where to push. Support Map, Feedback Loops, the 5Rs Diagnostic, and the Value/Effort Matrix on the Concepts screen can all pop out into their own larger window; each pop-out window offers both <b>Export PNG</b> (a rasterized image of the tool, via <code>html-to-image</code>) and <b>Export PDF</b> (the browser's print dialog).</p>
     </div>
 
     <h2 id="interactive">Interactive pieces</h2>
@@ -197,7 +195,7 @@
       <div class="heading">PERSISTED STATE · <code style="font-size:11.5px">fb_app_state_v1</code></div>
       <div class="lines">
         <div><span class="key">screen</span> — dashboard | concepts | workspace | tests | progress | systems</div>
-        <div><span class="key">home</span> — a | b | c <span class="cmt">// dashboard variant</span></div>
+        <div><span class="key">home</span> — a | b <span class="cmt">// dashboard variant</span></div>
         <div><span class="key">step</span> — 1 … 5 <span class="cmt">// active workspace step</span></div>
         <div><span class="key">concepts</span> — <span class="cmt">// every concept you've created, renamed or deleted</span></div>
         <div><span class="key">activeConceptId</span> — <span class="cmt">// which concept the workspace/Progress screens show</span></div>

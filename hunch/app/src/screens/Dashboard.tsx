@@ -1,9 +1,8 @@
 import {
-  Stack, TestTube, ListChecks, SealCheck, ArrowUp, ArrowRight, ChartBar, Lightbulb,
+  Stack, TestTube, ListChecks, SealCheck, ArrowUp, ArrowRight, Lightbulb,
   BookOpenText, ArrowSquareOut,
 } from '@phosphor-icons/react';
 import { useAppState } from '../state/AppState';
-import { tasks } from '../data/seed';
 import { Card, Chip, SegmentBar, ThinBar } from '../components/ui';
 import type { HomeVariant } from '../types';
 import { GUIDE_URL } from '../config';
@@ -22,10 +21,10 @@ export function Dashboard() {
 
   const toggle = (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-      <div className="serif" style={{ fontSize: 13, color: '#6b6e76', fontStyle: 'italic' }}>Dashboard home — explore 3 layout directions:</div>
+      <div className="serif" style={{ fontSize: 13, color: '#6b6e76', fontStyle: 'italic' }}>Dashboard home — explore 2 layout directions:</div>
       <div style={{ display: 'inline-flex', background: '#fff', border: '1px solid #e3e6ea', borderRadius: 10, padding: 3, gap: 2 }}>
-        {(['a', 'b', 'c'] as HomeVariant[]).map(v => {
-          const labels: Record<HomeVariant, string> = { a: 'A · Mission control', b: 'B · Pipeline', c: 'C · Editorial' };
+        {(['a', 'b'] as HomeVariant[]).map(v => {
+          const labels: Record<HomeVariant, string> = { a: 'A · Mission control', b: 'B · Pipeline' };
           const active = home === v;
           return (
             <button
@@ -42,7 +41,7 @@ export function Dashboard() {
           );
         })}
       </div>
-      <span style={{ fontSize: 11.5, color: '#9b9c9f', background: '#fff', border: '1px solid #e3e6ea', borderRadius: 20, padding: '3px 10px' }}>id 1a / 1b / 1c</span>
+      <span style={{ fontSize: 11.5, color: '#9b9c9f', background: '#fff', border: '1px solid #e3e6ea', borderRadius: 20, padding: '3px 10px' }}>id 1a / 1b</span>
       <a
         href={GUIDE_URL}
         target="_blank"
@@ -59,7 +58,6 @@ export function Dashboard() {
       {toggle}
       {home === 'a' && <VariantA />}
       {home === 'b' && <VariantB />}
-      {home === 'c' && <VariantC />}
     </div>
   );
 
@@ -101,59 +99,35 @@ export function Dashboard() {
           </Card>
         </div>
 
-        <div className="fb-grid2" style={{ display: 'grid', gridTemplateColumns: '1.7fr 1fr', gap: 18 }}>
-          <Card style={{ padding: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-              <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Concept portfolio</h3>
-              <button onClick={() => go('concepts')} className="fb-link" style={{ border: 'none', background: 'transparent', color: '#0079b0', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-                Value / Effort matrix <ArrowRight size={12} weight="bold" />
-              </button>
-            </div>
-            <p className="serif" style={{ margin: '0 0 16px', fontSize: 12.5, color: '#83878f', fontStyle: 'italic' }}>Each concept moves through the five steps.</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {concepts.filter(c => !c.shelved).map(c => {
-                const cs = chipStyle[c.accent];
-                return (
-                  <div key={c.id} onClick={() => setActiveConcept(c.id)} className="fb-hover fb-hover-row" style={{ border: '1px solid #e7eaee', borderRadius: 12, padding: '13px 14px', cursor: 'pointer' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 11 }}>
-                      <div style={{ width: 32, height: 32, borderRadius: 8, background: accentBg[c.accent], display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
-                        <Lightbulb size={18} color={accentFg[c.accent]} />
-                      </div>
-                      <div style={{ minWidth: 0, flex: 1 }}>
-                        <div style={{ fontSize: 13.5, fontWeight: 700 }}>{c.name}</div>
-                        <div style={{ fontSize: 11.5, color: '#9b9c9f' }}>{c.subtitle}</div>
-                      </div>
-                      <Chip color={cs.color} bg={cs.bg} border={cs.border}>{c.stepLabel}</Chip>
+        <Card style={{ padding: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Concept portfolio</h3>
+            <button onClick={() => go('concepts')} className="fb-link" style={{ border: 'none', background: 'transparent', color: '#0079b0', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+              Value / Effort matrix <ArrowRight size={12} weight="bold" />
+            </button>
+          </div>
+          <p className="serif" style={{ margin: '0 0 16px', fontSize: 12.5, color: '#83878f', fontStyle: 'italic' }}>Each concept moves through the five steps.</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {concepts.filter(c => !c.shelved).map(c => {
+              const cs = chipStyle[c.accent];
+              return (
+                <div key={c.id} onClick={() => setActiveConcept(c.id)} className="fb-hover fb-hover-row" style={{ border: '1px solid #e7eaee', borderRadius: 12, padding: '13px 14px', cursor: 'pointer' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 11 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 8, background: accentBg[c.accent], display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
+                      <Lightbulb size={18} color={accentFg[c.accent]} />
                     </div>
-                    <SegmentBar segments={c.segments} />
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 700 }}>{c.name}</div>
+                      <div style={{ fontSize: 11.5, color: '#9b9c9f' }}>{c.subtitle}</div>
+                    </div>
+                    <Chip color={cs.color} bg={cs.bg} border={cs.border}>{c.stepLabel}</Chip>
                   </div>
-                );
-              })}
-            </div>
-          </Card>
-
-          <Card style={{ padding: 19 }}>
-            <h3 style={{ margin: '0 0 13px', fontSize: 15, fontWeight: 700 }}>Up next for you</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {tasks.map(t => (
-                <div key={t.id} style={{ display: 'flex', gap: 11, alignItems: 'flex-start' }}>
-                  <span style={{
-                    width: 20, height: 20, borderRadius: 6, flex: '0 0 auto', marginTop: 1,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: t.done ? '#2ea38e' : 'transparent',
-                    border: t.done ? 'none' : '1.5px solid #c9cbce',
-                  }}>
-                    {t.done && <span style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>✓</span>}
-                  </span>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: t.done ? '#9b9c9f' : undefined, textDecoration: t.done ? 'line-through' : 'none' }}>{t.label}</div>
-                    <div style={{ fontSize: 11.5, color: '#9b9c9f' }}>{t.meta}</div>
-                  </div>
+                  <SegmentBar segments={c.segments} />
                 </div>
-              ))}
-            </div>
-          </Card>
-        </div>
+              );
+            })}
+          </div>
+        </Card>
       </div>
     );
   }
@@ -205,78 +179,4 @@ export function Dashboard() {
     );
   }
 
-  function VariantC() {
-    return (
-      <div className="fb-screen">
-        <div style={{ background: '#2c2e35', borderRadius: 18, padding: '30px 32px', color: '#fff', position: 'relative', overflow: 'hidden', marginBottom: 18 }}>
-          <div style={{ position: 'absolute', right: -40, top: -40, width: 230, height: 230, borderRadius: '50%', background: 'radial-gradient(circle,#008ecd 0%,rgba(0,142,205,0) 70%)', opacity: .5 }} />
-          <div style={{ position: 'relative', display: 'flex', gap: 26, flexWrap: 'wrap', alignItems: 'flex-end' }}>
-            <div style={{ flex: 1, minWidth: 260 }}>
-              <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: '#7fccbb' }}>In the field now · Step 5</span>
-              <h2 className="serif" style={{ fontSize: 32, fontWeight: 600, letterSpacing: '-.02em', margin: '8px 0 8px', lineHeight: 1.08 }}>Welcome Host trial<br />is running at 8 stations.</h2>
-              <p className="serif" style={{ fontSize: 14.5, color: '#b6b9c0', margin: '0 0 18px', maxWidth: 440, lineHeight: 1.5 }}>Over 13,000 customer interactions logged. Desirability assumptions are holding — the warm-welcome metric is well past threshold.</p>
-              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                <button onClick={() => setActiveConcept('welcome-host')} className="fb-btn-primary" style={{ background: '#008ecd', color: '#fff', border: 'none', borderRadius: 10, padding: '11px 17px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Open workspace</button>
-                <button onClick={() => go('tests')} style={{ background: 'rgba(255,255,255,.08)', color: '#fff', border: '1px solid rgba(255,255,255,.18)', borderRadius: 10, padding: '11px 17px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>View results</button>
-              </div>
-            </div>
-            <div style={{ display: 'flex', gap: 26 }}>
-              <div><div style={{ fontSize: 30, fontWeight: 700, letterSpacing: '-.02em' }}>80<span style={{ fontSize: 18, color: '#8a8e97' }}>%</span></div><div style={{ fontSize: 11.5, color: '#8a8e97', maxWidth: 90 }}>staff enjoyed the trial</div></div>
-              <div><div style={{ fontSize: 30, fontWeight: 700, letterSpacing: '-.02em' }}>62<span style={{ fontSize: 18, color: '#8a8e97' }}>%</span></div><div style={{ fontSize: 11.5, color: '#8a8e97', maxWidth: 90 }}>want to keep the new role</div></div>
-            </div>
-          </div>
-        </div>
-        <div className="fb-grid3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
-          <Card style={{ padding: 19 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 13 }}><ListChecks size={18} color="#008ecd" /><h3 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>This week</h3></div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
-              {tasks.map(t => (
-                <div key={t.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                  <span style={{
-                    width: 18, height: 18, borderRadius: 5, flex: '0 0 auto', marginTop: 1,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: t.done ? '#2ea38e' : 'transparent', border: t.done ? 'none' : '1.5px solid #c9cbce',
-                  }}>{t.done && <span style={{ color: '#fff', fontSize: 11, fontWeight: 700 }}>✓</span>}</span>
-                  <span style={{ fontSize: 12.5, lineHeight: 1.35, color: t.done ? '#9b9c9f' : undefined, textDecoration: t.done ? 'line-through' : 'none' }}>{t.label}</span>
-                </div>
-              ))}
-            </div>
-          </Card>
-          <Card style={{ padding: 19 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 13 }}><Stack size={18} color="#008ecd" /><h3 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>Portfolio</h3></div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-              {concepts.filter(c => !c.shelved).slice(0, 4).map(c => {
-                const cs = chipStyle[c.accent];
-                return (
-                  <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                    <span style={{ fontSize: 12.5, fontWeight: 600, flex: 1 }}>{c.name}</span>
-                    <span style={{ fontSize: 10.5, color: cs.color, background: cs.bg, padding: '1px 7px', borderRadius: 20 }}>Step {c.step}</span>
-                  </div>
-                );
-              })}
-              <button onClick={() => go('concepts')} style={{ marginTop: 4, border: 'none', background: 'transparent', color: '#0079b0', fontSize: 12, fontWeight: 600, cursor: 'pointer', textAlign: 'left', padding: 0 }}>See all {concepts.length} →</button>
-            </div>
-          </Card>
-          <Card style={{ padding: 19 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 13 }}><ChartBar size={18} color="#2ea38e" /><h3 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>Evidence snapshot</h3></div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {[
-                { label: 'Warm welcome', status: 'past target', color: '#2ea38e', value: 86 },
-                { label: 'Self-service uptake', status: 'on track', color: '#0079b0', value: 58 },
-                { label: 'Leisure travel promo', status: 'below', color: '#c25a48', value: 14 },
-              ].map(row => (
-                <div key={row.label}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
-                    <span style={{ fontWeight: 600 }}>{row.label}</span>
-                    <span style={{ color: row.color, fontWeight: 700 }}>{row.status}</span>
-                  </div>
-                  <ThinBar value={row.value} color={row.value < 30 ? '#d98a7c' : row.color === '#0079b0' ? '#008ecd' : row.color} height={6} />
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
-      </div>
-    );
-  }
 }

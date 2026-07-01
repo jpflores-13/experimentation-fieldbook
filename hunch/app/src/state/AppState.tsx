@@ -103,11 +103,16 @@ interface AppStateValue extends PersistedState {
   deleteConcept: (id: string) => void;
   updateConcept: (id: string, patch: Partial<Pick<Concept, 'name' | 'org' | 'description' | 'subtitle'>>) => void;
 
+  // Tests
+  deleteTest: (id: string) => void;
+  clearTests: () => void;
+
   // Step 1
   updateSnapshotUserLabel: (conceptId: string, which: 'user1Label' | 'user2Label', value: string) => void;
   updateSnapshotField: (conceptId: string, rowId: string, col: 'u1' | 'u2', value: string) => void;
   updateStoryboardCaption: (conceptId: string, frameId: string, value: string) => void;
   toggleStoryboardBlank: (conceptId: string, frameId: string) => void;
+  setStoryboardFile: (conceptId: string, frameId: string, file: { dataUrl: string; name: string; type: string } | null) => void;
 
   // Step 2
   addAssumption: (conceptId: string, category: AssumptionCategory) => void;
@@ -313,6 +318,14 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       setState(s => ({ ...s, concepts: s.concepts.map(c => (c.id === id ? { ...c, ...patchFields } : c)) }));
     },
 
+    // ---- Tests ----
+    deleteTest: (id) => {
+      setState(s => ({ ...s, tests: s.tests.filter(t => t.id !== id) }));
+    },
+    clearTests: () => {
+      setState(s => ({ ...s, tests: [] }));
+    },
+
     // ---- Step 1 ----
     updateSnapshotUserLabel: (conceptId, which, value) => {
       updateWorkspace(conceptId, w => ({ ...w, step1: { ...w.step1, [which]: value } }));
@@ -333,6 +346,17 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       updateWorkspace(conceptId, w => ({
         ...w,
         step1: { ...w.step1, storyboard: w.step1.storyboard.map(f => (f.id === frameId ? { ...f, blank: !f.blank } : f)) },
+      }));
+    },
+    setStoryboardFile: (conceptId, frameId, file) => {
+      updateWorkspace(conceptId, w => ({
+        ...w,
+        step1: {
+          ...w.step1,
+          storyboard: w.step1.storyboard.map(f => (f.id === frameId
+            ? { ...f, fileDataUrl: file?.dataUrl, fileName: file?.name, fileType: file?.type }
+            : f)),
+        },
       }));
     },
 

@@ -7,7 +7,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import {
   Graph, Target, ArrowsClockwise, ArrowsCounterClockwise, Shapes, Star, Sparkle, Plus,
-  ArrowBendUpRight, PlusCircle, Eye, Sliders, ArrowLeft, X, ArrowsOutSimple, Trash,
+  ArrowBendUpRight, PlusCircle, Eye, Sliders, ArrowLeft, X, Trash,
   ChartPolar, CaretRight, Copy, LockSimple, LockSimpleOpen,
 } from '@phosphor-icons/react';
 import { useAppState } from '../state/AppState';
@@ -17,25 +17,7 @@ import { ACTIVE_MAP_ID } from '../data/systemsSeed';
 import { detectLoops, loopBadgeText, loopColors } from '../state/loopAnalysis';
 import { fiveRElements, fiveRMeta, fiveRQuestions } from '../data/fiveRsQuestions';
 import { Card } from '../components/ui';
-
-function openPopout(tool: 'support' | 'loops' | 'fiveRs') {
-  const url = new URL(window.location.href);
-  url.search = `?popout=${tool}`;
-  window.open(url.toString(), `scintilla-popout-${tool}`, 'width=1040,height=760,noopener');
-}
-
-function PopoutButton({ tool }: { tool: 'support' | 'loops' | 'fiveRs' }) {
-  return (
-    <button
-      onClick={() => openPopout(tool)}
-      className="fb-hover fb-hover-bg"
-      title="Open in a new window"
-      style={{ border: '1px solid #e3e6ea', background: '#fff', borderRadius: 6, padding: '5px 9px', fontSize: 11.5, fontWeight: 600, color: '#5b5f67', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}
-    >
-      <ArrowsOutSimple size={13} /> Pop out
-    </button>
-  );
-}
+import { PopoutButton } from '../components/PopoutButton';
 
 const tabs: { key: SysTab; label: string; icon: React.ElementType }[] = [
   { key: 'support', label: 'System Support Map', icon: Target },

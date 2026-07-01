@@ -9,9 +9,11 @@ confirming a test in Step 3 logs it straight into the Tests tracker. Plus a
 Feedback Loops canvas, a 5Rs System Diagnostic library, and a Systems
 Archetypes reference gallery) for understanding the system an idea lives in.
 
-- **[`app/`](app/)** — the product: portfolio dashboard (3 layout variants),
-  the guided 5-step workflow, a Tests tracker, Progress timeline, and
-  **Systems maps**. React + TypeScript + Vite, state autosaves to
+- **[`app/`](app/)** — the product: portfolio dashboard (2 layout variants),
+  the guided 5-step workflow (storyboard frames accept image/PDF uploads), a
+  Tests tracker (individually deletable, or clear all), Progress timeline, and
+  **Systems maps**. A "?" help button next to every page title explains what
+  that screen is for. React + TypeScript + Vite, state autosaves to
   `localStorage`. No collaboration/team features — this is a single-user tool.
 - **[`guide/`](guide/)** — *"How the Scintilla app works"*, a Positron-style
   docs site covering every screen, including the systems mapping tools.
@@ -31,7 +33,7 @@ cd app && npm install && npm run dev      # http://localhost:5173
 cd ../guide && python3 -m http.server 4321 # http://localhost:4321
 ```
 
-## Exporting to PDF
+## Exporting to PDF &amp; PNG
 
 Every screen has an **Export PDF** button in the top bar (calls the browser's
 print dialog — choose "Save as PDF"). The Guided Workflow gets a dedicated
@@ -39,6 +41,11 @@ workbook layout: a cover page followed by all five steps, each starting on
 its own page, showing whatever's actually been filled in. Other screens print
 their current on-screen state with app chrome (sidebar, top bar, nav) hidden
 and grids reflowed to fit a portrait page.
+
+The System Support Map, Feedback Loops, 5Rs Diagnostic, and the Concepts
+screen's Value/Effort Matrix each have their own **Pop out** button for a
+larger, standalone window — and that window offers **Export PNG** (a
+rasterized image via `html-to-image`) alongside Export PDF.
 
 ## A note on originality
 

@@ -8,13 +8,16 @@ Two related products built from the same design system, each turning
    studies (Easykicks, Welcome Host, Career Navigator, ER Fast-Track).
 2. **[Scintilla](hunch/)** — the same five-step product for practitioners and
    design-thinking students (formerly "Hunch," still living in the `hunch/`
-   folder), with concepts you can fully create, rename and delete, and every
-   step template editable in place. Plus a **Systems mapping** workspace — a
-   real, editable Support Map, a Feedback Loops causal-loop canvas, a 5Rs
-   System Diagnostic (USAID 5Rs Framework), and a Systems Archetypes
-   reference gallery. Every screen exports to PDF. See
-   [`hunch/README.md`](hunch/README.md) and [`hunch/BRAND.md`](hunch/BRAND.md)
-   for the brand system.
+   folder), with concepts you can fully create, rename and delete, every step
+   template editable in place, and storyboard frames that accept real image
+   or PDF uploads. Plus a **Systems mapping** workspace — a real, editable
+   Support Map, a Feedback Loops causal-loop canvas, a 5Rs System Diagnostic
+   (USAID 5Rs Framework), and a Systems Archetypes reference gallery. Every
+   screen exports to PDF, and the Support Map, Feedback Loops, 5Rs Diagnostic
+   and Value/Effort Matrix can each pop out into their own window with PNG
+   export too. A "?" help button next to every page title explains what
+   that screen is for. See [`hunch/README.md`](hunch/README.md) and
+   [`hunch/BRAND.md`](hunch/BRAND.md) for the brand system.
 
 Each product is a self-contained React + TypeScript + Vite app (state
 autosaves to `localStorage`, no backend) paired with a static Positron-style

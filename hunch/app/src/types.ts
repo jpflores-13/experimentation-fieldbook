@@ -4,7 +4,7 @@
 export type Step = 1 | 2 | 3 | 4 | 5;
 export type Screen = 'dashboard' | 'concepts' | 'workspace' | 'tests' | 'progress' | 'systems';
 export type SysTab = 'support' | 'loops' | 'archetypes' | 'fiveRs';
-export type HomeVariant = 'a' | 'b' | 'c';
+export type HomeVariant = 'a' | 'b';
 export type Quadrant = 'quick-win' | 'strategic-bet' | 'fill-in' | 'avoid';
 
 export interface Concept {
@@ -40,6 +40,9 @@ export interface StoryboardFrame {
   id: string;
   caption: string;
   blank: boolean; // true = "co-create with user" placeholder instead of an image frame
+  fileDataUrl?: string; // uploaded image or PDF, stored as a data URL
+  fileName?: string;
+  fileType?: string; // mime type — 'image/*' renders a preview, anything else a file chip
 }
 
 export interface Step1Data {
@@ -150,13 +153,6 @@ export interface TestRow {
   statusColor: 'blue' | 'muted';
   result: string;
   resultColor: 'teal' | 'muted' | 'warn';
-}
-
-export interface TaskItem {
-  id: string;
-  label: string;
-  meta: string;
-  done: boolean;
 }
 
 // Systems mapping — per-concept records

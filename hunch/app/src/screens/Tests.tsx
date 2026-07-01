@@ -1,11 +1,13 @@
+import { X, Trash } from '@phosphor-icons/react';
 import { useAppState } from '../state/AppState';
 import { Card } from '../components/ui';
 
 const statusColor: Record<string, string> = { blue: '#008ecd', muted: '#83878f' };
 const resultColor: Record<string, string> = { teal: '#25826f', muted: '#9b9c9f', warn: '#c25a48' };
+const gridCols = '44px 1.4fr 1.1fr .8fr 1fr 1fr 40px';
 
 export function Tests() {
-  const { go, tests } = useAppState();
+  const { go, tests, deleteTest, clearTests } = useAppState();
   const inField = tests.filter(t => t.status === 'In field').length;
   const passed = tests.filter(t => t.resultColor === 'teal').length;
   const pivots = tests.filter(t => t.resultColor === 'warn').length;
@@ -19,25 +21,40 @@ export function Tests() {
       </div>
 
       <Card style={{ overflow: 'hidden', overflowX: 'auto', borderRadius: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 14px', gap: 10 }}>
           <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>All tests</h3>
-          <span style={{ fontSize: 11, color: '#9b9c9f' }}>Template 14 · test tracker</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 11, color: '#9b9c9f' }}>Template 14 · test tracker</span>
+            {tests.length > 0 && (
+              <button
+                onClick={() => { if (window.confirm('Clear all tests? This can\'t be undone.')) clearTests(); }}
+                className="fb-hover fb-hover-bg"
+                style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid #e3e6ea', background: '#fff', borderRadius: 8, padding: '6px 10px', fontSize: 11.5, fontWeight: 600, color: '#5b5f67', cursor: 'pointer' }}
+              >
+                <Trash size={13} /> Clear all
+              </button>
+            )}
+          </div>
         </div>
-        <div style={{ minWidth: 800 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '44px 1.4fr 1.1fr .8fr 1fr 1fr', background: '#f6f8fa', borderTop: '1px solid #e3e6ea', borderBottom: '1px solid #e3e6ea', fontSize: 10.5, fontWeight: 700, color: '#83878f', letterSpacing: '.04em' }}>
+        <div style={{ minWidth: 860 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: gridCols, background: '#f6f8fa', borderTop: '1px solid #e3e6ea', borderBottom: '1px solid #e3e6ea', fontSize: 10.5, fontWeight: 700, color: '#83878f', letterSpacing: '.04em' }}>
             <div style={{ padding: '11px 14px' }}>#</div>
             <div style={{ padding: '11px 14px' }}>CONCEPT</div>
             <div style={{ padding: '11px 14px' }}>TEST TYPE</div>
             <div style={{ padding: '11px 14px' }}>SAY/DO</div>
             <div style={{ padding: '11px 14px' }}>STATUS</div>
             <div style={{ padding: '11px 14px' }}>RESULT</div>
+            <div />
           </div>
+          {tests.length === 0 && (
+            <div style={{ padding: '28px 14px', textAlign: 'center', color: '#b0b3b8', fontSize: 12.5 }}>No tests yet — confirm a test from Step 3 of a concept's workspace.</div>
+          )}
           {tests.map((t, i) => (
             <div
               key={t.id}
               onClick={() => go('workspace')}
-              className="fb-hover fb-hover-bg"
-              style={{ display: 'grid', gridTemplateColumns: '44px 1.4fr 1.1fr .8fr 1fr 1fr', borderBottom: i < tests.length - 1 ? '1px solid #eef0f2' : 'none', fontSize: 12.5, cursor: 'pointer', alignItems: 'center' }}
+              className="fb-hover fb-hover-bg fb-note"
+              style={{ display: 'grid', gridTemplateColumns: gridCols, borderBottom: i < tests.length - 1 ? '1px solid #eef0f2' : 'none', fontSize: 12.5, cursor: 'pointer', alignItems: 'center' }}
             >
               <div style={{ padding: '12px 14px', color: '#9b9c9f', fontWeight: 700 }}>{t.id}</div>
               <div style={{ padding: '12px 14px', fontWeight: 600 }}>{t.concept}</div>
@@ -47,6 +64,14 @@ export function Tests() {
               </div>
               <div style={{ padding: '12px 14px' }}><span style={{ fontSize: 11, fontWeight: 600, color: statusColor[t.statusColor] }}>{t.status}</span></div>
               <div style={{ padding: '12px 14px', color: resultColor[t.resultColor], fontWeight: 600 }}>{t.result}</div>
+              <button
+                className="fb-note-delete"
+                onClick={e => { e.stopPropagation(); if (window.confirm('Delete this test?')) deleteTest(t.id); }}
+                title="Delete test"
+                style={{ border: 'none', background: 'transparent', color: '#b0b3b8', cursor: 'pointer', padding: 4, display: 'flex', justifyContent: 'center', opacity: 0 }}
+              >
+                <X size={14} />
+              </button>
             </div>
           ))}
         </div>
