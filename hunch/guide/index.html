@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hunch Docs — How the app works</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="A tour of every screen and component in Hunch — the dashboard, the guided five-step workflow, the systems mapping tools, and how the interactive pieces behave.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="navbar">
+  <a href="#top" class="brand">
+    <span class="brand-icon"><i class="ph-fill ph-flask" style="color:#fff;font-size:17px"></i></span>
+    <span class="brand-name">Hunch <span>Docs</span></span>
+  </a>
+  <nav>
+    <a href="#overview">Guide</a>
+    <a href="#components">Components</a>
+    <a href="#state">Data model</a>
+    <a href="#theming">Theming</a>
+  </nav>
+  <div class="search">
+    <i class="ph ph-magnifying-glass"></i>
+    <span>Search docs</span>
+    <kbd>/</kbd>
+  </div>
+  <a href="https://github.com" class="gh"><i class="ph ph-github-logo" style="font-size:17px"></i></a>
+</header>
+
+<div id="top" class="doc-shell">
+
+  <aside class="doc-left">
+    <div class="group-label">Getting started</div>
+    <a id="nav-overview" href="#overview" class="active">Overview</a>
+    <a href="#anatomy">Anatomy of the app</a>
+    <a href="#workflow">The five-step workflow</a>
+
+    <div class="group-label">Component reference</div>
+    <a href="#dashboard">Dashboard &amp; variants</a>
+    <a href="#concepts">Concepts &amp; the Matrix</a>
+    <a href="#workspace">Workspace &amp; Stepper</a>
+    <a href="#templates">The step templates</a>
+    <a href="#tests">Tests &amp; Progress</a>
+    <a href="#team">Team &amp; comments</a>
+    <a href="#systems">Systems mapping</a>
+
+    <div class="group-label">Under the hood</div>
+    <a href="#interactive">Interactive pieces</a>
+    <a href="#state">Data &amp; autosave</a>
+    <a href="#theming">Theming tokens</a>
+  </aside>
+
+  <main class="doc-main doc-prose">
+    <div class="breadcrumb"><span>Guide</span><i class="ph ph-caret-right" style="font-size:11px"></i><span class="current">How the app works</span></div>
+
+    <span class="eyebrow"><i class="ph-fill ph-book-open-text" style="font-size:14px"></i> Component guide</span>
+    <h1>How the Hunch app works</h1>
+    <p class="lead">A tour of every screen and component — what each one is for, how the pieces fit together, and how the interactive parts behave. Read it top to bottom, or jump to any component on the left.</p>
+
+    <h2 id="overview">Overview</h2>
+    <p>Hunch turns <em>The Experimentation Field Book</em>'s five-step process and fourteen templates into a working team tool. It has two halves that share the same data, plus a dedicated systems-thinking workspace:</p>
+    <div class="two-col">
+      <div class="info-card">
+        <div class="head"><span class="icon-tile" style="background:#eef7fc"><i class="ph ph-squares-four" style="color:#008ecd;font-size:16px"></i></span><b style="font-size:14px">The dashboard</b></div>
+        <p>Portfolio at a glance — every concept, its stage in the process, active tests, evidence, and team activity.</p>
+      </div>
+      <div class="info-card">
+        <div class="head"><span class="icon-tile" style="background:#eef6f3"><i class="ph ph-compass" style="color:#2ea38e;font-size:16px"></i></span><b style="font-size:14px">The guided workflow</b></div>
+        <p>Open a concept and work through Steps 1–5, filling in each step's templates as you go.</p>
+      </div>
+    </div>
+    <div class="callout note">
+      <div class="label"><i class="ph-fill ph-info" style="font-size:15px"></i> Note</div>
+      <p>The four case studies from the book seed the demo data — <b>Easykicks</b> (Nike), <b>Welcome Host</b> (South Western Railway), <b>Career Navigator</b> (PMI) and <b>ER Fast-Track</b> (Whiteriver Hospital). Swap them for your own concepts.</p>
+    </div>
+
+    <h2 id="anatomy">Anatomy of the app</h2>
+    <p>Every screen shares the same chrome: a fixed <b>sidebar</b> on the left, a <b>top bar</b>, and a scrolling <b>content area</b>. Only the content area changes as you navigate.</p>
+    <div class="anatomy">
+      <div class="frame">
+        <div class="sidebar-mini">
+          <div class="dot"></div>
+          <div class="bar active"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <div class="bar"></div>
+          <span class="caption">SIDEBAR</span>
+        </div>
+        <div class="body">
+          <div class="topbar-mini">
+            <div class="title-bar"></div>
+            <div class="btn"></div>
+            <span class="caption">TOP BAR</span>
+          </div>
+          <div class="content-mini">
+            <div class="row"><div class="kpi"></div><div class="kpi"></div><div class="kpi"></div></div>
+            <div class="panel"></div>
+            <span class="caption">CONTENT AREA</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ul>
+      <li><b>Sidebar</b> — brand lockup plus three nav groups: <em>Workspace</em> (Dashboard, Concepts, Guided Workflow, Tests, Progress), <em>Systems</em> (Systems maps, badged "NEW"), and <em>Team</em> (Members &amp; Activity). The active item is a solid blue pill. Below 900&nbsp;px it collapses to an icon-only rail.</li>
+      <li><b>Top bar</b> — a page title and subtitle that update per screen, a search field, a notification bell, and the primary <code>New concept</code> button.</li>
+      <li><b>Content area</b> — the only thing that swaps. Each screen fades and rises in over ~0.3&nbsp;s.</li>
+    </ul>
+
+    <h2 id="workflow">The five-step workflow</h2>
+    <p>The whole product is organised around the book's five steps. Each step owns a set of templates:</p>
+    <div class="table-wrap">
+      <div class="thead"><div>#</div><div>STEP</div><div style="border-left:1px solid #e9ecef">TEMPLATES</div></div>
+      <div class="row"><div class="n" style="color:#008ecd">1</div><div class="step">Frame a testable idea</div><div class="templates">Value/Effort Matrix · Concept Snapshot · Storyboard</div></div>
+      <div class="row"><div class="n" style="color:#008ecd">2</div><div class="step">Define evidence</div><div class="templates">Surfacing Assumptions · Prioritizing 2×2 · Wow Zone · Assumptions→Evidence</div></div>
+      <div class="row"><div class="n" style="color:#008ecd">3</div><div class="step">Select your test</div><div class="templates">Data Sort · Say/Do Continuum · Test Decision Flow · Test Digest</div></div>
+      <div class="row"><div class="n" style="color:#008ecd">4</div><div class="step">Build the prototype</div><div class="templates">Fidelity sliders · Format picker · Research Guide</div></div>
+      <div class="row"><div class="n" style="color:#2ea38e">5</div><div class="step">Execute · Analyze · Iterate</div><div class="templates">Audit Checklist · Live status · Results vs. thresholds · Iterate</div></div>
+    </div>
+
+    <h2 id="components">Component reference</h2>
+    <p>Here's each screen in turn — what it's for, what's in it, and how it behaves.</p>
+
+    <h3 id="dashboard">Dashboard &amp; its variants</h3>
+    <p>The home screen. A segmented toggle switches between three layout directions so the team can pick the one that fits how they work:</p>
+    <ul>
+      <li><b>A · Mission control</b> — four KPI cards over a two-column grid: a concept portfolio list (each row shows a five-segment step-progress bar) beside an "Up next" task list and a team-activity feed.</li>
+      <li><b>B · Pipeline</b> — a kanban with one column per step; concept cards flow left to right as they advance.</li>
+      <li><b>C · Editorial</b> — a dark hero spotlighting the concept in the field right now, with big headline metrics and three supporting widgets.</li>
+    </ul>
+    <div class="chip-row">
+      <span class="chip active"><i class="ph ph-squares-four"></i> A · Mission control</span>
+      <span class="chip inactive"><i class="ph ph-kanban"></i> B · Pipeline</span>
+      <span class="chip inactive"><i class="ph ph-article"></i> C · Editorial</span>
+    </div>
+    <div class="callout tip">
+      <div class="label"><i class="ph-fill ph-lightbulb" style="font-size:15px"></i> Tip</div>
+      <p>In production, ship <b>Variant A</b> as the default and treat B and C as optional home layouts — they exist so you can compare directions before committing.</p>
+    </div>
+
+    <h3 id="concepts">Concepts &amp; the Value/Effort Matrix</h3>
+    <p>This is Step 1's home. The signature component is the <b>Value/Effort Matrix</b>: a 2×2 with a <em>value</em> y-axis and an <em>effort</em> x-axis, split into Quick Wins, Strategic Bets, Fill-ins and Avoid. Each concept is a draggable pill positioned by its value/effort scores; the top-left "quick win" is highlighted. Beside it, an "All concepts" list gives a linear, scannable view — shelved concepts appear dimmed.</p>
+
+    <h3 id="workspace">Workspace &amp; the Stepper</h3>
+    <p>Opening a concept enters the guided workflow. A <b>concept header</b> (icon, name, org context, owners, comment count) sits above the <b>Stepper</b> — five connected nodes for the five steps. The active node is a blue ring; completed steps show a green check. Clicking a node, or the Back / Continue buttons at the foot of each step, moves you through the flow.</p>
+
+    <h3 id="templates">The step templates</h3>
+    <p>Each step renders its own templates as editable, interactive cards. A few highlights:</p>
+    <ul>
+      <li><b>Concept Snapshot</b> — a labeled grid: rows (<em>For / Who want / We will offer / That provides / Uniquely</em>) by user columns, with the "Uniquely" row tinted to draw the eye to differentiation.</li>
+      <li><b>Surfacing Assumptions</b> — three colour-coded columns for Desirability (blue), Feasibility (teal) and Viability (slate), each holding assumption chips.</li>
+      <li><b>Assumptions → Evidence</b> — a table pairing each assumption with observable evidence, a threshold→aspirational target, and a source.</li>
+      <li><b>Results</b> — threshold-versus-actual bars with a centre tick and PASS / BELOW pills.</li>
+    </ul>
+
+    <h3 id="tests">Tests &amp; Progress</h3>
+    <p><b>Tests</b> is a cross-concept tracker — a table of every test with its type, Say/Do character, status and result. <b>Progress</b> renders the book's Progress Tracker as a vertical timeline of the five steps (done, current, upcoming), plus mini progress bars for the other concepts.</p>
+
+    <h3 id="team">Team &amp; comments</h3>
+    <p>The team screen pairs a <b>Members</b> list (roles: Owner / Editor / Viewer) with a threaded <b>comments</b> feed. Comments attach to a specific concept and template, so a note about "Career Navigator · Assumptions" always points back to where the conversation happened.</p>
+
+    <h3 id="systems">Systems mapping</h3>
+    <p>A dedicated <b>Systems maps</b> workspace helps you understand the <em>system</em> an idea lives in before you test it. A tab switcher holds three tools:</p>
+    <ul>
+      <li><b>System Support Map</b> — a role-centred radial map. Your role sits at the centre, ringed outward by <em>Responsibilities → Needs → Resources → Wishes</em>, with colour-coded sticky notes on each ring and helpful / neutral / unhelpful stars on resources. Great for spotting gaps and duplicated effort.</li>
+      <li><b>Feedback Loops</b> — a causal-loop canvas (a friendlier Kumu). Elements are nodes; links carry a <code>+</code> / <code>−</code> polarity; the app labels each closed loop <b>R</b> (reinforcing, blue) or <b>B</b> (balancing, teal). The demo shows a growth engine capped by a support-load loop.</li>
+      <li><b>Systems Archetypes</b> — a gallery of the classic traps (Fixes that Fail, Limits to Growth, Tragedy of the Commons, Shifting the Burden…). Each card opens a detail view with the pattern, a "watch for it when…" cue, where to intervene, and a behaviour-over-time sketch.</li>
+    </ul>
+    <div class="callout tip">
+      <div class="label"><i class="ph-fill ph-lightbulb" style="font-size:15px"></i> Tip</div>
+      <p>The loops and archetypes are linked — when a feedback map matches a known trap, the app points you to the matching archetype so you know where to push.</p>
+    </div>
+
+    <h2 id="interactive">Interactive pieces</h2>
+    <p>Four components are genuinely reactive rather than static forms:</p>
+    <h3 style="margin-top:22px">Test Decision Flow</h3>
+    <p>Three questions funnel down to a single recommended test type. The recommendation panel recomputes live as you answer:</p>
+    <pre class="code-block"><span class="kw">if</span>   Q1 == <span class="str">"yes"</span>                         <span class="cmt">// data already exists</span>   → <span class="res">Thought test</span>
+<span class="kw">elif</span> Q3 == say  <span class="kw">and</span> Q2 == component     → <span class="res">Cognitive walkthrough</span>
+<span class="kw">elif</span> Q3 == say  <span class="kw">and</span> Q2 == whole         → <span class="res">Lemonade stand</span>
+<span class="kw">elif</span> Q3 == do   <span class="kw">and</span> Q2 == component     → <span class="res">Smoke test</span>
+<span class="kw">elif</span> Q3 == do   <span class="kw">and</span> Q2 == whole         → <span class="res">Simulation / Trial</span></pre>
+    <h3>Say/Do &amp; Fidelity sliders</h3>
+    <p>Native range inputs (tinted with the brand blue) capture where a test sits on the Say↔Do and low↔high-fidelity continuums. Their values persist between sessions.</p>
+    <h3>The Matrix &amp; the Stepper</h3>
+    <p>The Value/Effort matrix positions concepts by stored coordinates (drag to re-score); the Stepper drives which step body is shown. Both read from and write to the same app state described next.</p>
+
+    <h2 id="state">Data &amp; autosave</h2>
+    <p>The prototype keeps everything in local app state — no backend required. A small set of values drives navigation and the interactive pieces, and all of it is written to <code>localStorage</code> on every change and restored on load, so a refresh never loses your place.</p>
+    <div class="state-panel">
+      <div class="heading">PERSISTED STATE · <code style="font-size:11.5px">fb_app_state_v1</code></div>
+      <div class="lines">
+        <div><span class="key">screen</span> — dashboard | concepts | workspace | tests | progress | team | systems</div>
+        <div><span class="key">home</span> — a | b | c <span class="cmt">// dashboard variant</span></div>
+        <div><span class="key">step</span> — 1 … 5 <span class="cmt">// active workspace step</span></div>
+        <div><span class="key">q1 q2 q3</span> — decision-flow answers</div>
+        <div><span class="key">saydo</span> — 0 … 100 <span class="cmt">// Say/Do slider</span></div>
+        <div><span class="key">fidelity</span> — 0 … 100 <span class="cmt">// prototype fidelity slider</span></div>
+        <div><span class="key">sysTab</span> — support | loops | archetypes <span class="cmt">// systems map tool</span></div>
+        <div><span class="key">sysArch</span> — archetype id | null <span class="cmt">// open detail card</span></div>
+      </div>
+    </div>
+    <p>Concepts, assumptions, tests, comments, members, and each systems map are modelled as record collections, so the seeded case-study data can be replaced by real, user-created records without touching the UI.</p>
+
+    <h2 id="theming">Theming tokens</h2>
+    <p>The palette and type are lifted straight from the printed field book.</p>
+    <div class="swatches">
+      <div class="swatch"><div class="block" style="background:#2c2e35"></div><div class="hex">#2c2e35</div><div class="label">ink</div></div>
+      <div class="swatch"><div class="block" style="background:#008ecd"></div><div class="hex">#008ecd</div><div class="label">primary</div></div>
+      <div class="swatch"><div class="block" style="background:#2ea38e"></div><div class="hex">#2ea38e</div><div class="label">teal</div></div>
+      <div class="swatch"><div class="block" style="background:#5b6b7a"></div><div class="hex">#5b6b7a</div><div class="label">slate</div></div>
+      <div class="swatch"><div class="block" style="background:#eef7fc"></div><div class="hex">#eef7fc</div><div class="label">tint</div></div>
+      <div class="swatch"><div class="block" style="background:#eef1f4"></div><div class="hex">#eef1f4</div><div class="label">app bg</div></div>
+    </div>
+    <ul>
+      <li><b>Type</b> — Work Sans for UI and headings; Source Serif 4 for editorial prose and italic captions (standing in for the book's Tiempos serif).</li>
+      <li><b>Radius</b> — cards 14–16&nbsp;px, tiles 8–11&nbsp;px, chips fully rounded.</li>
+      <li><b>Icons</b> — Phosphor Icons (regular / bold / fill weights).</li>
+    </ul>
+
+    <div class="footer-nav">
+      <a href="#overview"><div class="eyebrow-sm">← Back to</div><div class="dest">Overview</div></a>
+      <a href="#theming" class="next"><div class="eyebrow-sm">Next →</div><div class="dest">Theming tokens</div></a>
+    </div>
+    <div class="colophon">Hunch Docs · component guide · modelled on the Positron documentation layout.</div>
+  </main>
+
+  <aside class="doc-right">
+    <div class="heading">On this page</div>
+    <div class="toc">
+      <a id="toc-overview" href="#overview" class="active">Overview</a>
+      <a id="toc-anatomy" href="#anatomy">Anatomy of the app</a>
+      <a id="toc-workflow" href="#workflow">The five-step workflow</a>
+      <a id="toc-components" href="#components">Component reference</a>
+      <a id="toc-interactive" href="#interactive">Interactive pieces</a>
+      <a id="toc-state" href="#state">Data &amp; autosave</a>
+      <a id="toc-theming" href="#theming">Theming tokens</a>
+    </div>
+    <div class="rail-links">
+      <a href="#"><i class="ph ph-pencil-simple" style="font-size:14px"></i> Edit this page</a>
+      <a href="#"><i class="ph ph-bug" style="font-size:14px"></i> Report an issue</a>
+    </div>
+  </aside>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
