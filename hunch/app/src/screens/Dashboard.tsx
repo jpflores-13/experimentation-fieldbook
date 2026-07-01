@@ -1,10 +1,12 @@
 import {
   Stack, TestTube, ListChecks, SealCheck, ArrowUp, ArrowRight, ChartBar, Lightbulb,
+  BookOpenText, ArrowSquareOut,
 } from '@phosphor-icons/react';
 import { useAppState } from '../state/AppState';
 import { tasks } from '../data/seed';
 import { Card, Chip, SegmentBar, ThinBar } from '../components/ui';
 import type { HomeVariant } from '../types';
+import { GUIDE_URL } from '../config';
 
 const accentBg: Record<string, string> = { blue: '#eef7fc', teal: '#eef6f3', slate: '#f1f3f6' };
 const accentFg: Record<string, string> = { blue: '#008ecd', teal: '#2ea38e', slate: '#5b6b7a' };
@@ -41,6 +43,14 @@ export function Dashboard() {
         })}
       </div>
       <span style={{ fontSize: 11.5, color: '#9b9c9f', background: '#fff', border: '1px solid #e3e6ea', borderRadius: 20, padding: '3px 10px' }}>id 1a / 1b / 1c</span>
+      <a
+        href={GUIDE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600, color: '#0079b0', textDecoration: 'none' }}
+      >
+        <BookOpenText size={14} /> New here? Read the guide <ArrowSquareOut size={12} />
+      </a>
     </div>
   );
 
@@ -244,7 +254,7 @@ export function Dashboard() {
                   </div>
                 );
               })}
-              <button onClick={() => go('concepts')} style={{ marginTop: 4, border: 'none', background: 'transparent', color: '#0079b0', fontSize: 12, fontWeight: 600, cursor: 'pointer', textAlign: 'left', padding: 0 }}>See all 6 →</button>
+              <button onClick={() => go('concepts')} style={{ marginTop: 4, border: 'none', background: 'transparent', color: '#0079b0', fontSize: 12, fontWeight: 600, cursor: 'pointer', textAlign: 'left', padding: 0 }}>See all {concepts.length} →</button>
             </div>
           </Card>
           <Card style={{ padding: 19 }}>
