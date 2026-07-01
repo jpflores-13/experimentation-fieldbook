@@ -29,7 +29,7 @@ cd hunch/guide && python3 -m http.server 4321
 
 ## Design source
 
-Both were built from high-fidelity Claude Design handoffs: exact colors, type
+Exact colors, type
 (Work Sans + Source Serif 4 + JetBrains Mono), spacing, copy, and interaction
 rules, recreated faithfully in each target stack rather than shipping the
 design HTML directly. Shared palette: ink `#2c2e35` · primary blue `#008ecd`
