@@ -1,6 +1,6 @@
 import {
   Stack, TestTube, ListChecks, SealCheck, ArrowUp, ArrowRight, Lightbulb,
-  BookOpenText, ArrowSquareOut,
+  BookOpenText, ArrowSquareOut, X, Trash,
 } from '@phosphor-icons/react';
 import { useAppState } from '../state/AppState';
 import { Card, Chip, SegmentBar, ThinBar } from '../components/ui';
@@ -16,7 +16,7 @@ const chipStyle: Record<string, { color: string; bg: string; border: string }> =
 };
 
 export function Dashboard() {
-  const { home, setHome, go, concepts, setActiveConcept } = useAppState();
+  const { home, setHome, go, concepts, setActiveConcept, deleteConcept, clearConcepts } = useAppState();
   const activeCount = concepts.filter(c => !c.shelved).length;
 
   const toggle = (
@@ -42,6 +42,15 @@ export function Dashboard() {
         })}
       </div>
       <span style={{ fontSize: 11.5, color: '#9b9c9f', background: '#fff', border: '1px solid #e3e6ea', borderRadius: 20, padding: '3px 10px' }}>id 1a / 1b</span>
+      {concepts.length > 0 && (
+        <button
+          onClick={() => { if (window.confirm('Clear all concepts? This deletes every concept and its workspace data — this can\'t be undone.')) clearConcepts(); }}
+          className="fb-hover fb-hover-bg"
+          style={{ display: 'flex', alignItems: 'center', gap: 6, border: '1px solid #e3e6ea', background: '#fff', borderRadius: 8, padding: '6px 10px', fontSize: 11.5, fontWeight: 600, color: '#5b5f67', cursor: 'pointer' }}
+        >
+          <Trash size={13} /> Clear all concepts
+        </button>
+      )}
       <a
         href={GUIDE_URL}
         target="_blank"
@@ -58,6 +67,7 @@ export function Dashboard() {
       {toggle}
       {home === 'a' && <VariantA />}
       {home === 'b' && <VariantB />}
+      <SourcesFooter />
     </div>
   );
 
@@ -111,7 +121,7 @@ export function Dashboard() {
             {concepts.filter(c => !c.shelved).map(c => {
               const cs = chipStyle[c.accent];
               return (
-                <div key={c.id} onClick={() => setActiveConcept(c.id)} className="fb-hover fb-hover-row" style={{ border: '1px solid #e7eaee', borderRadius: 12, padding: '13px 14px', cursor: 'pointer' }}>
+                <div key={c.id} onClick={() => setActiveConcept(c.id)} className="fb-hover fb-hover-row fb-note" style={{ border: '1px solid #e7eaee', borderRadius: 12, padding: '13px 14px', cursor: 'pointer' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 11 }}>
                     <div style={{ width: 32, height: 32, borderRadius: 8, background: accentBg[c.accent], display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
                       <Lightbulb size={18} color={accentFg[c.accent]} />
@@ -121,6 +131,14 @@ export function Dashboard() {
                       <div style={{ fontSize: 11.5, color: '#9b9c9f' }}>{c.subtitle}</div>
                     </div>
                     <Chip color={cs.color} bg={cs.bg} border={cs.border}>{c.stepLabel}</Chip>
+                    <button
+                      className="fb-note-delete"
+                      onClick={e => { e.stopPropagation(); if (window.confirm(`Delete "${c.name}"? This can't be undone.`)) deleteConcept(c.id); }}
+                      title="Delete concept"
+                      style={{ border: 'none', background: 'transparent', color: '#b0b3b8', cursor: 'pointer', padding: 4, display: 'flex', flex: '0 0 auto', opacity: 0 }}
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
                   <SegmentBar segments={c.segments} />
                 </div>
@@ -163,8 +181,16 @@ export function Dashboard() {
                   {items.map(c => {
                     const cs = chipStyle[c.accent];
                     return (
-                      <div key={c.id} onClick={() => setActiveConcept(c.id)} className="fb-hover fb-hover-row" style={{ background: '#fff', border: '1px solid #e7eaee', borderRadius: 12, padding: 13, cursor: 'pointer' }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 3 }}>{c.name}</div>
+                      <div key={c.id} onClick={() => setActiveConcept(c.id)} className="fb-hover fb-hover-row fb-note" style={{ position: 'relative', background: '#fff', border: '1px solid #e7eaee', borderRadius: 12, padding: 13, cursor: 'pointer' }}>
+                        <button
+                          className="fb-note-delete"
+                          onClick={e => { e.stopPropagation(); if (window.confirm(`Delete "${c.name}"? This can't be undone.`)) deleteConcept(c.id); }}
+                          title="Delete concept"
+                          style={{ position: 'absolute', top: 6, right: 6, border: 'none', background: 'transparent', color: '#b0b3b8', cursor: 'pointer', padding: 4, display: 'flex', opacity: 0 }}
+                        >
+                          <X size={13} />
+                        </button>
+                        <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 3, paddingRight: 16 }}>{c.name}</div>
                         <div style={{ fontSize: 11, color: '#9b9c9f', marginBottom: 9 }}>{c.subtitle}</div>
                         <Chip color={cs.color} bg={cs.bg} border="transparent" style={{ border: 'none', padding: '2px 8px', fontSize: 10.5 }}>{c.quadrantLabel}</Chip>
                       </div>
@@ -179,4 +205,17 @@ export function Dashboard() {
     );
   }
 
+}
+
+function SourcesFooter() {
+  return (
+    <div className="no-print" style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid #e7eaee', fontSize: 11, color: '#9b9c9f', lineHeight: 1.7 }}>
+      Built on:{' '}
+      <a href="https://cup.columbia.edu/book/the-experimentation-field-book/9780231214179/" target="_blank" rel="noopener noreferrer" style={{ color: '#0079b0', fontWeight: 600, textDecoration: 'none' }}>The Experimentation Field Book</a>
+      {' '}(Liedtka, Chen, Foley &amp; Kester, Columbia Business School Publishing, 2024) — the five-step process &amp; templates ·{' '}
+      <a href="https://rhntc.org/sites/default/files/resources/fpntc_sys_supp_2019-07_0.pdf" target="_blank" rel="noopener noreferrer" style={{ color: '#0079b0', fontWeight: 600, textDecoration: 'none' }}>Systems Support Mapping</a>
+      {' '}(Family Planning National Training Center, 2019) — the System Support Map ·{' '}
+      <span style={{ fontWeight: 600, color: '#5b5f67' }}>"The 5Rs Framework in the Program Cycle"</span> (USAID Technical Note, Version 2.1, 2016) — the 5Rs System Diagnostic.
+    </div>
+  );
 }

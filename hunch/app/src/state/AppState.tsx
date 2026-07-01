@@ -101,6 +101,7 @@ interface AppStateValue extends PersistedState {
   setActiveConcept: (id: string) => void;
   createConcept: () => string;
   deleteConcept: (id: string) => void;
+  clearConcepts: () => void;
   updateConcept: (id: string, patch: Partial<Pick<Concept, 'name' | 'org' | 'description' | 'subtitle'>>) => void;
 
   // Tests
@@ -313,6 +314,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         const activeConceptId = s.activeConceptId === id ? (concepts[0]?.id ?? '') : s.activeConceptId;
         return { ...s, concepts, workspaceData, activeConceptId };
       });
+    },
+    clearConcepts: () => {
+      setState(s => ({ ...s, concepts: [], workspaceData: {}, activeConceptId: '' }));
     },
     updateConcept: (id, patchFields) => {
       setState(s => ({ ...s, concepts: s.concepts.map(c => (c.id === id ? { ...c, ...patchFields } : c)) }));

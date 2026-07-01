@@ -42,3 +42,19 @@ Exact colors, type
 rules, recreated faithfully in each target stack rather than shipping the
 design HTML directly. Shared palette: ink `#2c2e35` · primary blue `#008ecd`
 · teal `#2ea38e` · slate `#5b6b7a` · app bg `#eef1f4`.
+
+## Sources
+
+Both products adapt published frameworks rather than inventing their own.
+Full credit belongs to the original authors and organizations:
+
+- **[The Experimentation Field Book: A Step-by-Step Project Guide](https://cup.columbia.edu/book/the-experimentation-field-book/9780231214179/)**
+  — Jeanne Liedtka, Elizabeth Chen, Natalie Foley & David Kester, Columbia
+  Business School Publishing, 2024. Source of the five-step process, all
+  fourteen numbered templates, and the four seeded case studies.
+- **[Systems Support Mapping](https://rhntc.org/sites/default/files/resources/fpntc_sys_supp_2019-07_0.pdf)**
+  — Family Planning National Training Center (FPNTC), 2019. Source of
+  Scintilla's System Support Map tool.
+- **"The 5Rs Framework in the Program Cycle"** (Technical Note, Version 2.1)
+  — USAID, October 2016. Source of Scintilla's 5Rs System Diagnostic, whose
+  guiding questions are drawn verbatim from the Note's Table 1.

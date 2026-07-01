@@ -33,7 +33,7 @@ cd app && npm install && npm run dev      # http://localhost:5173
 cd ../guide && python3 -m http.server 4321 # http://localhost:4321
 ```
 
-## Exporting to PDF &amp; PNG
+## Exporting to PDF & PNG
 
 Every screen has an **Export PDF** button in the top bar (calls the browser's
 print dialog — choose "Save as PDF"). The Guided Workflow gets a dedicated
@@ -46,6 +46,22 @@ The System Support Map, Feedback Loops, 5Rs Diagnostic, and the Concepts
 screen's Value/Effort Matrix each have their own **Pop out** button for a
 larger, standalone window — and that window offers **Export PNG** (a
 rasterized image via `html-to-image`) alongside Export PDF.
+
+## Sources
+
+Scintilla adapts three published frameworks — full credit belongs to the
+original authors and organizations:
+
+- **[The Experimentation Field Book: A Step-by-Step Project Guide](https://cup.columbia.edu/book/the-experimentation-field-book/9780231214179/)**
+  — Jeanne Liedtka, Elizabeth Chen, Natalie Foley & David Kester, Columbia
+  Business School Publishing, 2024. Source of the five-step process, all
+  fourteen numbered templates, and the four seeded case studies.
+- **[Systems Support Mapping](https://rhntc.org/sites/default/files/resources/fpntc_sys_supp_2019-07_0.pdf)**
+  — Family Planning National Training Center (FPNTC), 2019. Source of the
+  System Support Map tool.
+- **"The 5Rs Framework in the Program Cycle"** (Technical Note, Version 2.1)
+  — USAID, October 2016. Source of the 5Rs System Diagnostic, whose guiding
+  questions are drawn verbatim from the Note's Table 1.
 
 ## A note on originality
 
