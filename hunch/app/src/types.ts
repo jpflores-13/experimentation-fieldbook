@@ -190,6 +190,7 @@ export interface LoopLinkRecord {
 }
 
 export interface LoopGraph {
+  title: string;
   nodes: LoopNodeRecord[];
   links: LoopLinkRecord[];
 }

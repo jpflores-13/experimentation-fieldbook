@@ -24,6 +24,7 @@ export const defaultSupportMaps: Record<string, SupportMap> = {
 
 export const defaultLoopGraphs: Record<string, LoopGraph> = {
   [ACTIVE_MAP_ID]: {
+    title: 'Growth & onboarding loop',
     nodes: [
       { id: 'signups', label: 'New signups', x: 250, y: 55 },
       { id: 'active', label: 'Active users', x: 475, y: 150 },

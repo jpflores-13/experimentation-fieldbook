@@ -17,6 +17,7 @@ import { ACTIVE_MAP_ID } from '../data/systemsSeed';
 import { detectLoops, loopBadgeText, loopColors } from '../state/loopAnalysis';
 import { fiveRElements, fiveRMeta, fiveRQuestions } from '../data/fiveRsQuestions';
 import { Card } from '../components/ui';
+import { EditableText } from '../components/EditableText';
 import { PopoutButton } from '../components/PopoutButton';
 
 const tabs: { key: SysTab; label: string; icon: React.ElementType }[] = [
@@ -248,7 +249,7 @@ function RingNote({ note, containerRef, startEditing, onEditStarted }: {
 }
 
 export function SupportMapTab() {
-  const { supportMaps, addSupportNote } = useAppState();
+  const { supportMaps, addSupportNote, renameSupportMap } = useAppState();
   const map = supportMaps[ACTIVE_MAP_ID];
   const containerRef = useRef<HTMLDivElement>(null);
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
@@ -264,7 +265,12 @@ export function SupportMapTab() {
     <div className="fb-screen fb-grid2" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 18 }}>
       <Card style={{ padding: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, gap: 10, flexWrap: 'wrap' }}>
-          <h3 style={{ margin: 0, fontSize: 14.5, fontWeight: 700 }}>{map.title}</h3>
+          <EditableText
+            value={map.title}
+            onCommit={v => renameSupportMap(ACTIVE_MAP_ID, v)}
+            placeholder="Untitled support map"
+            style={{ fontSize: 14.5, fontWeight: 700 }}
+          />
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ fontSize: 11, color: '#9b9c9f' }}>role-centred map · click a note to rename, drag to move</span>
             <PopoutButton tool="support" />
@@ -470,7 +476,7 @@ function LoopArrowDefs() {
 }
 
 function LoopCanvas({ graph, loops }: { graph: LoopGraph; loops: ReturnType<typeof detectLoops> }) {
-  const { addLoopNode, renameLoopNode, moveLoopNode, addLoopLink, clearLoopGraph } = useAppState();
+  const { addLoopNode, renameLoopNode, moveLoopNode, addLoopLink, clearLoopGraph, renameLoopGraph } = useAppState();
   const { zoomIn, zoomOut } = useReactFlow();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [linkMode, setLinkMode] = useState(false);
@@ -527,6 +533,14 @@ function LoopCanvas({ graph, loops }: { graph: LoopGraph; loops: ReturnType<type
 
   return (
     <Card style={{ padding: '16px 18px' }}>
+      <div style={{ marginBottom: 10 }}>
+        <EditableText
+          value={graph.title}
+          onCommit={v => renameLoopGraph(loopGraphId, v)}
+          placeholder="Untitled feedback loop"
+          style={{ fontSize: 14.5, fontWeight: 700 }}
+        />
+      </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', gap: 4, background: '#f5f7f9', border: '1px solid #e3e6ea', borderRadius: 9, padding: 3 }}>
           <button
@@ -1036,6 +1050,50 @@ function ArchGlyph({ glyph }: { glyph: GlyphSpec }) {
   );
 }
 
+const loopToneColor: Record<'R' | 'B', { fill: string; stroke: string; text: string }> = {
+  R: { fill: '#eef7fc', stroke: '#a9d4ef', text: '#0079b0' },
+  B: { fill: '#eef6f3', stroke: '#a9dbcf', text: '#25826f' },
+};
+
+// Lays out one circle per loop encoded in the archetype's badge (e.g. "R + R + B"
+// or a single "R"), so the diagram actually matches how many loops — and of
+// which type — are coupled together in that archetype, instead of always
+// showing a fixed two-circle R/B pair.
+function CoupledLoopsDiagram({ badge }: { badge: string }) {
+  const tokens = badge.split(/[+·]/).map(s => s.trim()).filter((t): t is 'R' | 'B' => t === 'R' || t === 'B');
+  const w = 220, h = 120;
+  const positions = tokens.length <= 1
+    ? [{ x: w / 2, y: h / 2 }]
+    : tokens.length === 2
+    ? [{ x: 66, y: 60 }, { x: 154, y: 60 }]
+    : [{ x: 60, y: 42 }, { x: 160, y: 42 }, { x: 110, y: 92 }];
+  const r = tokens.length <= 1 ? 34 : tokens.length === 2 ? 30 : 26;
+
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} style={{ width: '100%', maxWidth: 220 }}>
+      <defs>
+        <marker id="cld-arrow" markerWidth="8" markerHeight="8" refX="5" refY="2.6" orient="auto"><path d="M0,0 L5,2.6 L0,5.2 Z" fill="#b0b3b8" /></marker>
+      </defs>
+      {positions.map((p, i) => {
+        const q = positions[(i + 1) % positions.length];
+        if (positions.length < 2 || (positions.length === 2 && i > 0)) return null;
+        const midX = (p.x + q.x) / 2;
+        const midY = (p.y + q.y) / 2 - (positions.length === 2 ? 14 : 0);
+        return <path key={i} d={`M${p.x},${p.y} Q${midX},${midY} ${q.x},${q.y}`} fill="none" stroke="#c7cbd1" strokeWidth="1.6" markerEnd="url(#cld-arrow)" />;
+      })}
+      {positions.map((p, i) => {
+        const tone = loopToneColor[tokens[i]];
+        return (
+          <g key={i}>
+            <circle cx={p.x} cy={p.y} r={r} fill={tone.fill} stroke={tone.stroke} strokeWidth="1.5" />
+            <text x={p.x} y={p.y + 5} textAnchor="middle" fontSize="16" fontWeight="800" fill={tone.text} fontFamily="Work Sans">{tokens[i]}</text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 function ArchetypesTab() {
   const { sysArch, setSysArch } = useAppState();
 
@@ -1069,18 +1127,7 @@ function ArchetypesTab() {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <Card style={{ padding: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 180, background: '#fbfcfd' }}>
-              <svg viewBox="0 0 220 120" style={{ width: '100%', maxWidth: 220 }}>
-                <defs>
-                  <marker id="dah" markerWidth="8" markerHeight="8" refX="5" refY="2.6" orient="auto"><path d="M0,0 L5,2.6 L0,5.2 Z" fill="#008ecd" /></marker>
-                  <marker id="daht" markerWidth="8" markerHeight="8" refX="5" refY="2.6" orient="auto"><path d="M0,0 L5,2.6 L0,5.2 Z" fill="#2ea38e" /></marker>
-                </defs>
-                <circle cx="66" cy="60" r="30" fill="#eef7fc" stroke="#a9d4ef" strokeWidth="1.5" />
-                <circle cx="154" cy="60" r="30" fill="#eef6f3" stroke="#a9dbcf" strokeWidth="1.5" />
-                <path d="M92,45 Q110,30 128,45" fill="none" stroke="#008ecd" strokeWidth="2" markerEnd="url(#dah)" />
-                <path d="M128,75 Q110,90 92,75" fill="none" stroke="#2ea38e" strokeWidth="2" markerEnd="url(#daht)" />
-                <text x="66" y="64" textAnchor="middle" fontSize="16" fontWeight="800" fill="#0079b0" fontFamily="Work Sans">R</text>
-                <text x="154" y="64" textAnchor="middle" fontSize="16" fontWeight="800" fill="#25826f" fontFamily="Work Sans">B</text>
-              </svg>
+              <CoupledLoopsDiagram badge={arch.badge} />
               <div style={{ fontSize: 11, color: '#9b9c9f', marginTop: 10, textAlign: 'center' }}>coupled loops — {arch.badge}</div>
             </Card>
             <Card style={{ padding: 18 }}>
@@ -1088,10 +1135,9 @@ function ArchetypesTab() {
               <svg viewBox="0 0 240 90" style={{ width: '100%' }}>
                 <line x1="18" y1="76" x2="230" y2="76" stroke="#d4d8dd" />
                 <line x1="18" y1="8" x2="18" y2="76" stroke="#d4d8dd" />
-                <polyline points="18,66 60,54 100,36 140,26 175,42 210,60" fill="none" stroke="#008ecd" strokeWidth="2.2" />
-                <polyline points="18,50 230,50" fill="none" stroke="#9b9c9f" strokeWidth="1" strokeDasharray="3 3" />
+                <polyline points={arch.behaviorPoints} fill="none" stroke="#008ecd" strokeWidth="2.2" />
               </svg>
-              <div style={{ fontSize: 10.5, color: '#9b9c9f', marginTop: 4 }}>solid = actual · dashed = intended / limit</div>
+              <div style={{ fontSize: 10.5, color: '#9b9c9f', marginTop: 4 }}>the shape this archetype actually produces over time</div>
             </Card>
           </div>
         </div>

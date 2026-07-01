@@ -96,6 +96,8 @@ interface AppStateValue extends PersistedState {
   addLoopLink: (graphId: string, from: string, to: string, polarity: Polarity) => string;
   deleteLoopLink: (graphId: string, linkId: string) => void;
   clearLoopGraph: (graphId: string) => void;
+  renameLoopGraph: (graphId: string, title: string) => void;
+  renameSupportMap: (mapId: string, title: string) => void;
 
   // Concepts
   setActiveConcept: (id: string) => void;
@@ -226,6 +228,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     setStep: (step) => patch({ step }),
     setSysTab: (sysTab) => patch({ sysTab, sysArch: null }),
     setSysArch: (sysArch) => patch({ sysArch }),
+    renameSupportMap: (mapId, title) => {
+      const trimmed = title.trim();
+      if (!trimmed) return;
+      updateMap(mapId, m => ({ ...m, title: trimmed }));
+    },
     addSupportNote: (mapId, ring) => {
       const existingCount = state.supportMaps[mapId]?.notes.filter(n => n.ring === ring).length ?? 0;
       const { x, y } = nextRingPosition(ring, existingCount);
@@ -271,6 +278,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     },
     deleteLoopNode: (graphId, nodeId) => {
       updateGraph(graphId, g => ({
+        ...g,
         nodes: g.nodes.filter(n => n.id !== nodeId),
         links: g.links.filter(l => l.from !== nodeId && l.to !== nodeId),
       }));
@@ -284,7 +292,12 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       updateGraph(graphId, g => ({ ...g, links: g.links.filter(l => l.id !== linkId) }));
     },
     clearLoopGraph: (graphId) => {
-      updateGraph(graphId, () => ({ nodes: [], links: [] }));
+      updateGraph(graphId, g => ({ ...g, nodes: [], links: [] }));
+    },
+    renameLoopGraph: (graphId, title) => {
+      const trimmed = title.trim();
+      if (!trimmed) return;
+      updateGraph(graphId, g => ({ ...g, title: trimmed }));
     },
 
     // ---- Concepts ----

@@ -16,7 +16,7 @@ export function Sidebar() {
     { screen: 'progress', label: 'Progress', icon: ListChecks },
   ];
 
-  const NavButton = ({ item, newBadge }: { item: (typeof workspaceItems)[number] & { newBadge?: boolean }; newBadge?: boolean }) => {
+  const NavButton = ({ item }: { item: (typeof workspaceItems)[number] }) => {
     const active = screen === item.screen;
     const Icon = item.icon;
     return (
@@ -37,11 +37,6 @@ export function Sidebar() {
               {item.badge}
             </span>
           )}
-          {newBadge && (
-            <span style={{ marginLeft: 'auto', fontSize: 9, fontWeight: 700, background: '#2ea38e', color: '#fff', padding: '1px 6px', borderRadius: 20 }}>
-              NEW
-            </span>
-          )}
         </span>
       </button>
     );
@@ -49,22 +44,25 @@ export function Sidebar() {
 
   return (
     <aside className="fb-sidebar" style={{ width: 248, flex: '0 0 auto', background: '#2c2e35', display: 'flex', flexDirection: 'column', color: '#c8cace', zIndex: 5 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '22px 20px 18px' }}>
+      <button
+        onClick={() => go('dashboard')}
+        style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '22px 20px 18px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', width: '100%' }}
+      >
         <img src="/scintilla-icon.svg" width={34} height={34} alt="" style={{ flex: '0 0 auto' }} />
         <div className="fb-brandtext" style={{ lineHeight: 1.1 }}>
           <div style={{ fontFamily: "'Work Sans',sans-serif", fontSize: 16, fontWeight: 800, color: '#fff', letterSpacing: '-.03em' }}>scintilla</div>
           <div style={{ fontSize: 11, color: '#7e828b', fontWeight: 500 }}>Test any idea</div>
         </div>
-      </div>
+      </button>
 
-      <div style={{ padding: '6px 12px 2px', fontSize: 10.5, letterSpacing: '.12em', textTransform: 'uppercase', color: '#6c707a', fontWeight: 600 }}>Workspace</div>
+      <div style={{ padding: '6px 12px 2px', fontSize: 10.5, letterSpacing: '.12em', textTransform: 'uppercase', color: '#6c707a', fontWeight: 600 }}>Design</div>
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '6px 12px' }}>
         {workspaceItems.map(item => <NavButton key={item.screen} item={item} />)}
       </nav>
 
       <div style={{ padding: '14px 12px 2px', fontSize: 10.5, letterSpacing: '.12em', textTransform: 'uppercase', color: '#6c707a', fontWeight: 600 }}>Systems</div>
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '6px 12px' }}>
-        <NavButton item={{ screen: 'systems', label: 'Systems maps', icon: Graph }} newBadge />
+        <NavButton item={{ screen: 'systems', label: 'Systems maps', icon: Graph }} />
       </nav>
 
       <div style={{ marginTop: 'auto', padding: 12 }}>
