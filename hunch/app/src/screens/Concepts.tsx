@@ -64,7 +64,7 @@ function MatrixPill({ concept, isActive, containerRef }: {
       <span style={{ width: 18, height: 18, borderRadius: '50%', background: dotColor[concept.accent], display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
         <Lightbulb size={10} weight="fill" color="#fff" />
       </span>
-      <span style={{ fontSize: 11, fontWeight: 700 }}>{concept.name.split(' ').slice(0, 2).join(' ')}</span>
+      <span className="fb-matrix-label" style={{ fontSize: 11, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 96 }}>{concept.name.split(' ').slice(0, 2).join(' ')}</span>
     </div>
   );
 }

@@ -28,7 +28,7 @@ export function HelpButton({ title, children }: { title: string; children: React
         <Question size={13} weight="bold" />
       </button>
       {open && (
-        <div style={{ position: 'absolute', top: 30, left: 0, zIndex: 40, width: 280, background: '#fff', border: '1px solid #e3e6ea', borderRadius: 12, boxShadow: '0 10px 30px rgba(0,0,0,.16)', padding: '14px 16px' }}>
+        <div style={{ position: 'absolute', top: 30, left: 0, zIndex: 40, width: 'min(280px, calc(100vw - 48px))', background: '#fff', border: '1px solid #e3e6ea', borderRadius: 12, boxShadow: '0 10px 30px rgba(0,0,0,.16)', padding: '14px 16px' }}>
           <div style={{ fontSize: 12.5, fontWeight: 700, marginBottom: 6, color: '#2c2e35' }}>{title}</div>
           <div style={{ fontSize: 12, color: '#5b5f67', lineHeight: 1.5 }}>{children}</div>
         </div>

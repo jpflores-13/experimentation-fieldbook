@@ -189,7 +189,7 @@ function RingNote({ note, containerRef, startEditing, onEditStarted }: {
 
   return (
     <div
-      className="fb-note"
+      className="fb-note fb-support-note"
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -227,7 +227,7 @@ function RingNote({ note, containerRef, startEditing, onEditStarted }: {
           style={{ fontSize: 9.5, fontWeight: 600, color: style.color, background: 'transparent', border: 'none', borderBottom: `1px solid ${style.color}`, outline: 'none', width: 140 }}
         />
       ) : (
-        <span>{note.text}</span>
+        <span style={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', minWidth: 0, flex: '1 1 auto' }}>{note.text}</span>
       )}
       {!editing && (
         <button
@@ -276,7 +276,7 @@ export function SupportMapTab() {
             <PopoutButton tool="support" />
           </div>
         </div>
-        <div ref={containerRef} style={{ position: 'relative', width: '100%', maxWidth: 520, margin: '6px auto 0', aspectRatio: '1/1' }}>
+        <div ref={containerRef} style={{ position: 'relative', width: '100%', maxWidth: 520, margin: '16px auto 0', aspectRatio: '1/1' }}>
           <div style={{ position: 'absolute', inset: '1%', borderRadius: '50%', border: '1.5px solid #a9d4ef', background: 'rgba(191,224,245,.10)' }} />
           <div style={{ position: 'absolute', inset: '16%', borderRadius: '50%', border: '1.5px solid #efb0b0', background: 'rgba(255,194,194,.10)' }} />
           <div style={{ position: 'absolute', inset: '31%', borderRadius: '50%', border: '1.5px solid #eec18a', background: 'rgba(255,214,165,.12)' }} />

@@ -52,31 +52,33 @@ export function TopBar() {
   const help = helpFor(screen, step, sysTab);
 
   return (
-    <header style={{ flex: '0 0 auto', height: 64, background: '#fff', borderBottom: '1px solid #e3e6ea', display: 'flex', alignItems: 'center', gap: 16, padding: '0 26px' }}>
-      <div style={{ minWidth: 0, display: 'flex', alignItems: 'center', gap: 9 }}>
-        <div>
-          <div style={{ fontSize: 16.5, fontWeight: 700, letterSpacing: '-.01em', color: '#2c2e35' }}>{title}</div>
-          <div style={{ fontSize: 12, color: '#83878f', fontWeight: 500 }}>{sub}</div>
+    <header className="fb-topbar" style={{ flex: '0 0 auto', minHeight: 64, background: '#fff', borderBottom: '1px solid #e3e6ea', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 10, rowGap: 8, padding: '10px 16px' }}>
+      <div style={{ minWidth: 0, display: 'flex', alignItems: 'center', gap: 9, flex: '1 1 auto' }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 16.5, fontWeight: 700, letterSpacing: '-.01em', color: '#2c2e35', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</div>
+          <div className="fb-topbar-sub" style={{ fontSize: 12, color: '#83878f', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</div>
         </div>
         <HelpButton title={help.title}>{help.body}</HelpButton>
       </div>
-      <div className="fb-topbar-search" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 9, background: '#f1f3f6', border: '1px solid #e3e6ea', borderRadius: 10, padding: '8px 12px', width: 230 }}>
+      <div className="fb-topbar-search" style={{ display: 'flex', alignItems: 'center', gap: 9, background: '#f1f3f6', border: '1px solid #e3e6ea', borderRadius: 10, padding: '8px 12px', width: 230 }}>
         <MagnifyingGlass size={16} color="#9b9c9f" />
         <input placeholder="Search concepts, tests…" style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: 13, color: '#2c2e35', width: '100%' }} />
       </div>
       <button
         onClick={() => window.print()}
-        className="fb-hover fb-hover-bg"
+        className="fb-hover fb-hover-bg fb-touch-target"
+        title="Export PDF"
         style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#fff', border: '1px solid #e3e6ea', borderRadius: 10, padding: '9px 13px', fontSize: 12.5, fontWeight: 600, color: '#5b5f67', cursor: 'pointer', whiteSpace: 'nowrap' }}
       >
-        <Printer size={16} /> Export PDF
+        <Printer size={16} /> <span className="fb-btn-label">Export PDF</span>
       </button>
       <button
-        className="fb-btn-primary"
+        className="fb-btn-primary fb-touch-target"
         onClick={() => createConcept()}
+        title="New concept"
         style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#008ecd', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 15px', fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,142,205,.35)', whiteSpace: 'nowrap' }}
       >
-        <Plus size={15} weight="bold" /> New concept
+        <Plus size={15} weight="bold" /> <span className="fb-btn-label">New concept</span>
       </button>
     </header>
   );

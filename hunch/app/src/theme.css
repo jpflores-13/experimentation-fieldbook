@@ -78,6 +78,31 @@ input[type="range"] { accent-color: var(--primary); cursor: pointer; }
   .fb-grid4 { grid-template-columns: 1fr 1fr !important; }
   .fb-topbar-search { display: none !important; }
 }
+@media (max-width: 560px) {
+  .fb-btn-label { display: none !important; }
+  .fb-topbar { padding: 8px 12px !important; }
+}
+@media (max-width: 400px) {
+  .fb-topbar-sub { display: none !important; }
+}
+@media (max-width: 560px) {
+  .fb-matrix-label { max-width: 52px !important; }
+  .fb-support-note { max-width: 84px !important; font-size: 8.5px !important; padding: 4px 6px !important; }
+}
+
+/* touch devices have no hover state, so anything gated behind :hover (delete
+   buttons, reveal-on-hover affordances) must default to visible instead of
+   invisible — otherwise it's simply unreachable on a phone or tablet. */
+@media (hover: none) {
+  .fb-note-delete { opacity: 1 !important; padding: 8px !important; }
+}
+/* primary action buttons should be comfortably tappable (~40px) on touch
+   devices; small inline delete buttons (.fb-note-delete) intentionally stay
+   compact — the 8px padding above already gives them a reasonable hit area
+   without ballooning past the tiny notes/rows they sit inside. */
+@media (hover: none) and (pointer: coarse) {
+  .fb-touch-target { min-width: 40px; min-height: 40px; }
+}
 
 /* print / export-to-PDF */
 .print-only { display: none; }
