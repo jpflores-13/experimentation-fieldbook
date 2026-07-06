@@ -25,9 +25,9 @@ export function Progress() {
             <SneakerMove size={18} weight="fill" color="#008ecd" />
           </span>
           <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Easykicks · Progress Tracker</h3>
-          <span style={{ marginLeft: 'auto', fontSize: 11, color: '#9b9c9f' }}>Template 1</span>
+          <span style={{ marginLeft: 'auto', fontSize: 11, color: '#767676' }}>Template 1</span>
         </div>
-        <p className="serif" style={{ margin: '0 0 20px', fontSize: 13, color: '#6b6e76', fontStyle: 'italic' }}>One full cycle of testing, milestone by milestone.</p>
+        <p className="serif" style={{ margin: '0 0 20px', fontSize: 13, color: '#5e6168', fontStyle: 'italic' }}>One full cycle of testing, milestone by milestone.</p>
 
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {milestones.map((m, i) => (
@@ -40,7 +40,7 @@ export function Progress() {
                   boxShadow: m.state === 'current' ? '0 0 0 4px #dcefff' : 'none',
                 }}>
                   {m.state === 'done' ? <Check size={15} weight="bold" color="#fff" /> : (
-                    <span style={{ color: m.state === 'current' ? '#fff' : '#9b9c9f', fontSize: 13, fontWeight: 700 }}>{m.n}</span>
+                    <span style={{ color: m.state === 'current' ? '#fff' : '#767676', fontSize: 13, fontWeight: 700 }}>{m.n}</span>
                   )}
                 </span>
                 {i < milestones.length - 1 && (
@@ -48,7 +48,7 @@ export function Progress() {
                 )}
               </div>
               <div style={{ paddingBottom: i < milestones.length - 1 ? 20 : 0 }}>
-                <div style={{ fontSize: 13.5, fontWeight: 700, color: m.state === 'current' ? '#0079b0' : m.state === 'future' ? '#9b9c9f' : undefined }}>
+                <div style={{ fontSize: 13.5, fontWeight: 700, color: m.state === 'current' ? '#0079b0' : m.state === 'future' ? '#767676' : undefined }}>
                   {m.title}
                   {m.state === 'current' && <span style={{ fontSize: 10.5, fontWeight: 700, background: '#eef7fc', color: '#0079b0', padding: '2px 8px', borderRadius: 20, marginLeft: 4 }}>IN PROGRESS</span>}
                 </div>
@@ -66,7 +66,7 @@ export function Progress() {
             <Card key={oc.id} style={{ padding: 16, borderRadius: 14 }}>
               <div style={{ fontSize: 12.5, fontWeight: 700, marginBottom: 8 }}>{c.name}</div>
               <div style={{ marginBottom: 8 }}><SegmentBar segments={c.segments} /></div>
-              <div style={{ fontSize: 11, color: '#9b9c9f' }}>{oc.label}</div>
+              <div style={{ fontSize: 11, color: '#767676' }}>{oc.label}</div>
             </Card>
           );
         })}

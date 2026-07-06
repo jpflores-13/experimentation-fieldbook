@@ -22,6 +22,7 @@ export function Sidebar() {
       <button
         className={`fb-navitem${active ? ' active' : ''}`}
         onClick={() => go(item.screen)}
+        aria-label={item.label}
         style={{
           position: 'relative', display: 'flex', alignItems: 'center', gap: 12, width: '100%',
           border: 'none', background: active ? '#008ecd' : 'transparent', color: 'inherit',
@@ -49,16 +50,16 @@ export function Sidebar() {
         </div>
         <div className="fb-brandtext" style={{ lineHeight: 1.1 }}>
           <div style={{ fontSize: 14.5, fontWeight: 700, color: '#fff', letterSpacing: '-.01em' }}>Field Book</div>
-          <div style={{ fontSize: 11, color: '#7e828b', fontWeight: 500 }}>Experimentation OS</div>
+          <div style={{ fontSize: 11, color: '#9da3ac', fontWeight: 500 }}>Experimentation OS</div>
         </div>
       </div>
 
-      <div style={{ padding: '6px 12px 2px', fontSize: 10.5, letterSpacing: '.12em', textTransform: 'uppercase', color: '#6c707a', fontWeight: 600 }}>Workspace</div>
+      <div style={{ padding: '6px 12px 2px', fontSize: 10.5, letterSpacing: '.12em', textTransform: 'uppercase', color: '#9da3ac', fontWeight: 600 }}>Workspace</div>
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '6px 12px' }}>
         {workspaceItems.map(item => <NavButton key={item.screen} item={item} />)}
       </nav>
 
-      <div style={{ padding: '14px 12px 2px', fontSize: 10.5, letterSpacing: '.12em', textTransform: 'uppercase', color: '#6c707a', fontWeight: 600 }}>Team</div>
+      <div style={{ padding: '14px 12px 2px', fontSize: 10.5, letterSpacing: '.12em', textTransform: 'uppercase', color: '#9da3ac', fontWeight: 600 }}>Team</div>
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '6px 12px' }}>
         <NavButton item={{ screen: 'team', label: 'Members & Activity', icon: UsersThree }} />
       </nav>

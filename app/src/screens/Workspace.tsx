@@ -34,8 +34,8 @@ export function Workspace() {
                 <span style={{ flex: 1, height: 2, background: i === 0 ? 'transparent' : '#e3e6ea' }} />
                 <span style={{
                   width: 30, height: 30, borderRadius: '50%', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: active ? '#008ecd' : done ? '#2ea38e' : '#eef1f4',
-                  color: active || done ? '#fff' : '#9b9c9f',
+                  background: active ? '#0073a8' : done ? '#2ea38e' : '#eef1f4',
+                  color: active || done ? '#fff' : '#767676',
                   border: !active && !done ? '1.5px solid #d8d9da' : 'none',
                   boxShadow: active ? '0 0 0 4px #dcefff' : 'none',
                 }}>
@@ -62,7 +62,7 @@ function ConceptHeader() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 13, marginBottom: 18, flexWrap: 'wrap' }}>
       <span style={{ width: 44, height: 44, borderRadius: 11, background: '#eef7fc', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
-        <SneakerMove size={23} weight="fill" color="#008ecd" />
+        <SneakerMove size={23} weight="fill" color="#0073a8" />
       </span>
       <div style={{ flex: 1, minWidth: 180 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 9, flexWrap: 'wrap' }}>
@@ -73,7 +73,7 @@ function ConceptHeader() {
       </div>
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <Avatar initials="JR" color="#2ea38e" size={28} style={{ border: '2px solid #eef1f4' }} />
-        <Avatar initials="MA" color="#008ecd" size={28} style={{ border: '2px solid #eef1f4', marginLeft: -8 }} />
+        <Avatar initials="MA" color="#0073a8" size={28} style={{ border: '2px solid #eef1f4', marginLeft: -8 }} />
       </div>
       <button className="fb-hover fb-hover-bg" style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#fff', border: '1px solid #e3e6ea', borderRadius: 10, padding: '9px 13px', fontSize: 12.5, fontWeight: 600, color: '#5b5f67', cursor: 'pointer' }}>
         <ChatCircle size={15} /> 3
@@ -82,7 +82,7 @@ function ConceptHeader() {
   );
 }
 
-function StepFooter({ backLabel, onBack, nextLabel, onNext, nextColor = '#008ecd', nextHover = '#0079b0' }: { backLabel: string; onBack: () => void; nextLabel: string; onNext: () => void; nextColor?: string; nextHover?: string }) {
+function StepFooter({ backLabel, onBack, nextLabel, onNext, nextColor = '#0073a8', nextHover = '#0079b0' }: { backLabel: string; onBack: () => void; nextLabel: string; onNext: () => void; nextColor?: string; nextHover?: string }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 22, paddingTop: 18, borderTop: '1px solid #e7eaee' }}>
       <button onClick={onBack} className="fb-hover fb-hover-bg" style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#fff', border: '1px solid #e3e6ea', borderRadius: 10, padding: '10px 15px', fontSize: 13, fontWeight: 600, color: '#5b5f67', cursor: 'pointer' }}>
@@ -104,7 +104,7 @@ function SectionHeading({ title, note }: { title: string; note: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 14 }}>
       <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>{title}</h3>
-      <span className="serif" style={{ fontSize: 12, color: '#9b9c9f', fontStyle: 'italic' }}>{note}</span>
+      <span className="serif" style={{ fontSize: 12, color: '#767676', fontStyle: 'italic' }}>{note}</span>
     </div>
   );
 }
@@ -113,7 +113,7 @@ function CardHeading({ title, tag }: { title: string; tag: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
       <h4 style={{ margin: 0, fontSize: 13.5, fontWeight: 700 }}>{title}</h4>
-      <span style={{ fontSize: 11, color: '#9b9c9f' }}>{tag}</span>
+      <span style={{ fontSize: 11, color: '#767676' }}>{tag}</span>
     </div>
   );
 }
@@ -121,7 +121,7 @@ function CardHeading({ title, tag }: { title: string; tag: string }) {
 function RowGroup({ label, sub, u1, u2 }: { label: string; sub: string; u1: ReactNode; u2: ReactNode }) {
   return (
     <>
-      <div style={{ padding: '14px 16px', fontSize: 12.5, fontWeight: 700, background: '#fafbfc', borderBottom: '1px solid #eef0f2' }}>{label}<div style={{ fontSize: 10.5, color: '#9b9c9f', fontWeight: 500, fontStyle: 'italic' }}>{sub}</div></div>
+      <div style={{ padding: '14px 16px', fontSize: 12.5, fontWeight: 700, background: '#fafbfc', borderBottom: '1px solid #eef0f2' }}>{label}<div style={{ fontSize: 10.5, color: '#767676', fontWeight: 500, fontStyle: 'italic' }}>{sub}</div></div>
       <div style={{ padding: 14, fontSize: 12, lineHeight: 1.5, borderLeft: '1px solid #eef0f2', borderBottom: '1px solid #eef0f2', color: '#4a4d55' }}>{u1}</div>
       <div style={{ padding: 14, fontSize: 12, lineHeight: 1.5, borderLeft: '1px solid #eef0f2', borderBottom: '1px solid #eef0f2', color: '#4a4d55' }}>{u2}</div>
     </>
@@ -152,19 +152,19 @@ function Step1() {
             <div style={{ padding: '12px 14px', fontSize: 11, fontWeight: 700, color: '#0079b0', borderLeft: '1px solid #e3e6ea' }}>USER 2 · Their Parents</div>
           </div>
           {snapshotRows.map(row => <RowGroup key={row.label} {...row} />)}
-          <div style={{ padding: '14px 16px', fontSize: 12.5, fontWeight: 700, background: '#fafbfc', borderBottom: '1px solid #eef0f2' }}>We will offer<div style={{ fontSize: 10.5, color: '#9b9c9f', fontWeight: 500, fontStyle: 'italic' }}>offering</div></div>
+          <div style={{ padding: '14px 16px', fontSize: 12.5, fontWeight: 700, background: '#fafbfc', borderBottom: '1px solid #eef0f2' }}>We will offer<div style={{ fontSize: 10.5, color: '#767676', fontWeight: 500, fontStyle: 'italic' }}>offering</div></div>
           <div style={{ gridColumn: '2 / -1', padding: 14, fontSize: 12.5, lineHeight: 1.5, borderLeft: '1px solid #eef0f2', borderBottom: '1px solid #eef0f2', color: '#4a4d55' }}>A subscription that delivers the right shoes when kids need them, with a simple return-and-recycle loop for outgrown pairs.</div>
-          <div style={{ padding: '14px 16px', fontSize: 12.5, fontWeight: 700, background: '#fafbfc', borderBottom: '1px solid #eef0f2' }}>That provides<div style={{ fontSize: 10.5, color: '#9b9c9f', fontWeight: 500, fontStyle: 'italic' }}>benefits</div></div>
+          <div style={{ padding: '14px 16px', fontSize: 12.5, fontWeight: 700, background: '#fafbfc', borderBottom: '1px solid #eef0f2' }}>That provides<div style={{ fontSize: 10.5, color: '#767676', fontWeight: 500, fontStyle: 'italic' }}>benefits</div></div>
           <div style={{ padding: 14, fontSize: 12, lineHeight: 1.5, borderLeft: '1px solid #eef0f2', borderBottom: '1px solid #eef0f2', color: '#4a4d55' }}>Self-expression, confidence & a special feeling when they perform</div>
           <div style={{ padding: 14, fontSize: 12, lineHeight: 1.5, borderLeft: '1px solid #eef0f2', borderBottom: '1px solid #eef0f2', color: '#4a4d55' }}>The shoes their athletes need, when they need them — with less shopping pain</div>
-          <div style={{ padding: '14px 16px', fontSize: 12.5, fontWeight: 700, background: '#eef7fc' }}>Uniquely<div style={{ fontSize: 10.5, color: '#9b9c9f', fontWeight: 500, fontStyle: 'italic' }}>differentiation</div></div>
+          <div style={{ padding: '14px 16px', fontSize: 12.5, fontWeight: 700, background: '#eef7fc' }}>Uniquely<div style={{ fontSize: 10.5, color: '#767676', fontWeight: 500, fontStyle: 'italic' }}>differentiation</div></div>
           <div style={{ gridColumn: '2 / -1', padding: 14, fontSize: 12, lineHeight: 1.5, borderLeft: '1px solid #eef0f2', background: '#eef7fc', color: '#0d3f57' }}>A sustainable, cyclical buy-return process with accurate fit assessment and a 1:1 ongoing relationship — a service experience wrapped around the shoe.</div>
         </div>
       </Card>
 
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 12 }}>
         <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Storyboard</h3>
-        <span className="serif" style={{ fontSize: 12, color: '#9b9c9f', fontStyle: 'italic' }}>Template 4 — blank frames are intentional, to co-create with users</span>
+        <span className="serif" style={{ fontSize: 12, color: '#767676', fontStyle: 'italic' }}>Template 4 — blank frames are intentional, to co-create with users</span>
       </div>
       <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 6 }}>
         {storyboard.map(f => (
@@ -192,7 +192,7 @@ function Step1() {
 function Step2() {
   const { setStep } = useAppState();
   const assumptionCols = [
-    { title: 'Desirability', color: '#008ecd', textColor: '#0079b0', icon: Heart, bg: '#eef7fc', border: '#d6ecf8', items: ["Parents want to recycle their kids' outgrown shoes", 'A prepaid return bag removes the friction of sending back'] },
+    { title: 'Desirability', color: '#0073a8', textColor: '#0079b0', icon: Heart, bg: '#eef7fc', border: '#d6ecf8', items: ["Parents want to recycle their kids' outgrown shoes", 'A prepaid return bag removes the friction of sending back'] },
     { title: 'Feasibility', color: '#2ea38e', textColor: '#25826f', icon: Wrench, bg: '#eef6f3', border: '#d4ebe4', items: ['Parents will actually mail the old shoes back', 'Returns can be processed at existing facilities'] },
     { title: 'Viability', color: '#5b6b7a', textColor: '#4c5966', icon: ChartLineUp, bg: '#f3f5f7', border: '#e3e7ea', items: ['Cost to process each returned pair stays low enough', 'Recovered materials offset the processing cost'] },
   ];
@@ -205,13 +205,13 @@ function Step2() {
     <div className="fb-screen">
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 6 }}>
         <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Defining evidence</h3>
-        <span className="serif" style={{ fontSize: 12, color: '#9b9c9f', fontStyle: 'italic' }}>test the assumptions, not the concept</span>
+        <span className="serif" style={{ fontSize: 12, color: '#767676', fontStyle: 'italic' }}>test the assumptions, not the concept</span>
       </div>
-      <p className="serif" style={{ margin: '0 0 18px', fontSize: 13, color: '#6b6e76', maxWidth: 640, lineHeight: 1.5 }}>
+      <p className="serif" style={{ margin: '0 0 18px', fontSize: 13, color: '#5e6168', maxWidth: 640, lineHeight: 1.5 }}>
         Surface the beliefs that make this concept a <span style={{ fontStyle: 'italic' }}>wow</span>, prioritise the make-or-break ones, then define observable, countable evidence with threshold &amp; aspirational targets.
       </p>
 
-      <h4 style={{ margin: '0 0 11px', fontSize: 13.5, fontWeight: 700 }}>Surfacing Assumptions <span style={{ fontWeight: 500, color: '#9b9c9f', fontSize: 11.5 }}>· Template 5</span></h4>
+      <h4 style={{ margin: '0 0 11px', fontSize: 13.5, fontWeight: 700 }}>Surfacing Assumptions <span style={{ fontWeight: 500, color: '#767676', fontSize: 11.5 }}>· Template 5</span></h4>
       <div className="fb-grid3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14, marginBottom: 24 }}>
         {assumptionCols.map(col => {
           const Icon = col.icon;
@@ -225,7 +225,7 @@ function Step2() {
                 {col.items.map(item => (
                   <div key={item} style={{ background: col.bg, border: `1px solid ${col.border}`, borderRadius: 9, padding: '9px 11px', fontSize: 12, lineHeight: 1.4, fontWeight: 500 }}>{item}</div>
                 ))}
-                <div style={{ background: '#f6f8fa', border: '1px dashed #cdd6dc', borderRadius: 9, padding: '9px 11px', fontSize: 11.5, color: '#9b9c9f', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ background: '#f6f8fa', border: '1px dashed #cdd6dc', borderRadius: 9, padding: '9px 11px', fontSize: 11.5, color: '#767676', display: 'flex', alignItems: 'center', gap: 6 }}>
                   <PlusCircle size={12} /> add assumption
                 </div>
               </div>
@@ -258,7 +258,7 @@ function Step2() {
                   <div style={{ fontSize: 10, fontWeight: 700, lineHeight: 1.25 }}>Parents value recycling</div>
                 </div>
                 <div style={{ position: 'absolute', top: '70%', left: '64%', transform: 'translate(-50%,-50%)', background: '#fff', border: '1.5px solid #d8d9da', borderRadius: 9, padding: '5px 8px', boxShadow: '0 2px 6px rgba(0,0,0,.05)', maxWidth: 110 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, lineHeight: 1.25, color: '#6b6e76' }}>Existing facilities suffice</div>
+                  <div style={{ fontSize: 10, fontWeight: 700, lineHeight: 1.25, color: '#5e6168' }}>Existing facilities suffice</div>
                 </div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
@@ -272,10 +272,10 @@ function Step2() {
         <Card style={{ padding: 18, borderRadius: 14, display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
             <h4 style={{ margin: 0, fontSize: 13.5, fontWeight: 700 }}>The Wow Zone</h4>
-            <span style={{ fontSize: 11, color: '#9b9c9f' }}>desirable · feasible · viable</span>
+            <span style={{ fontSize: 11, color: '#767676' }}>desirable · feasible · viable</span>
           </div>
           <div style={{ flex: 1, position: 'relative', minHeight: 170 }}>
-            <div style={{ position: 'absolute', top: '14%', left: '50%', transform: 'translateX(-50%)', width: 118, height: 118, borderRadius: '50%', background: 'rgba(0,142,205,.22)', border: '1.5px solid #008ecd', display: 'flex', justifyContent: 'center', paddingTop: 12 }}>
+            <div style={{ position: 'absolute', top: '14%', left: '50%', transform: 'translateX(-50%)', width: 118, height: 118, borderRadius: '50%', background: 'rgba(0,142,205,.22)', border: '1.5px solid #0073a8', display: 'flex', justifyContent: 'center', paddingTop: 12 }}>
               <span style={{ fontSize: 10.5, fontWeight: 700, color: '#0079b0' }}>Desirable</span>
             </div>
             <div style={{ position: 'absolute', top: '44%', left: '27%', width: 118, height: 118, borderRadius: '50%', background: 'rgba(46,163,142,.22)', border: '1.5px solid #2ea38e', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 14 }}>
@@ -291,7 +291,7 @@ function Step2() {
         </Card>
       </div>
 
-      <h4 style={{ margin: '0 0 11px', fontSize: 13.5, fontWeight: 700 }}>Assumptions → Evidence <span style={{ fontWeight: 500, color: '#9b9c9f', fontSize: 11.5 }}>· Template 7</span></h4>
+      <h4 style={{ margin: '0 0 11px', fontSize: 13.5, fontWeight: 700 }}>Assumptions → Evidence <span style={{ fontWeight: 500, color: '#767676', fontSize: 11.5 }}>· Template 7</span></h4>
       <Card style={{ overflow: 'hidden', overflowX: 'auto', borderRadius: 14 }}>
         <div style={{ minWidth: 720 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.5fr 1.2fr 1fr', background: '#f6f8fa', borderBottom: '1px solid #e3e6ea', fontSize: 10.5, fontWeight: 700, color: '#83878f', letterSpacing: '.04em' }}>
@@ -304,7 +304,7 @@ function Step2() {
             <div key={r.a} style={{ display: 'grid', gridTemplateColumns: '1.3fr 1.5fr 1.2fr 1fr', borderBottom: i < evidenceRows.length - 1 ? '1px solid #eef0f2' : 'none', fontSize: 12, lineHeight: 1.45 }}>
               <div style={{ padding: '13px 14px', fontWeight: 600 }}>{r.a}</div>
               <div style={{ padding: '13px 14px', borderLeft: '1px solid #f0f2f4', color: '#4a4d55' }}>{r.e}</div>
-              <div style={{ padding: '13px 14px', borderLeft: '1px solid #f0f2f4' }}><span style={{ fontWeight: 700, color: '#0079b0' }}>{r.t}</span> <span style={{ color: '#9b9c9f' }}>→ {r.asp}</span></div>
+              <div style={{ padding: '13px 14px', borderLeft: '1px solid #f0f2f4' }}><span style={{ fontWeight: 700, color: '#0079b0' }}>{r.t}</span> <span style={{ color: '#767676' }}>→ {r.asp}</span></div>
               <div style={{ padding: '13px 14px', borderLeft: '1px solid #f0f2f4', color: '#4a4d55' }}>{r.s}</div>
             </div>
           ))}
@@ -319,11 +319,11 @@ function Step2() {
 function QRow({ label, question, options }: { label: string; question: string; options: { key: string; text: string; active: boolean; onClick: () => void }[] }) {
   return (
     <div style={{ marginBottom: 15 }}>
-      <div style={{ fontSize: 12, fontWeight: 600, color: '#5b5f67', marginBottom: 8 }}><span style={{ color: '#008ecd', fontWeight: 700 }}>{label}.</span> {question}</div>
+      <div style={{ fontSize: 12, fontWeight: 600, color: '#5b5f67', marginBottom: 8 }}><span style={{ color: '#0073a8', fontWeight: 700 }}>{label}.</span> {question}</div>
       <div style={{ display: 'flex', gap: 8 }}>
         {options.map(o => (
           <button key={o.key} onClick={o.onClick} style={{
-            position: 'relative', flex: 1, border: `1.5px solid ${o.active ? '#008ecd' : '#e3e6ea'}`,
+            position: 'relative', flex: 1, border: `1.5px solid ${o.active ? '#0073a8' : '#e3e6ea'}`,
             background: o.active ? '#eef7fc' : '#fff', borderRadius: 9, padding: 9, fontSize: 12, fontWeight: 600,
             cursor: 'pointer', color: '#5b5f67',
           }}>{o.text}</button>
@@ -342,7 +342,7 @@ function Step3() {
     <div className="fb-screen">
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 18 }}>
         <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Selecting your test</h3>
-        <span className="serif" style={{ fontSize: 12, color: '#9b9c9f', fontStyle: 'italic' }}>a funnel of four questions → one test type</span>
+        <span className="serif" style={{ fontSize: 12, color: '#767676', fontStyle: 'italic' }}>a funnel of four questions → one test type</span>
       </div>
 
       <div className="fb-grid2" style={{ display: 'grid', gridTemplateColumns: '1.15fr 1fr', gap: 16, marginBottom: 24 }}>
@@ -363,7 +363,7 @@ function Step3() {
         </Card>
 
         <div style={{ borderRadius: 14, padding: 20, display: 'flex', flexDirection: 'column', background: '#2c2e35', color: '#fff', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', right: -30, top: -30, width: 150, height: 150, borderRadius: '50%', background: 'radial-gradient(circle,#008ecd,rgba(0,142,205,0) 70%)', opacity: .45 }} />
+          <div style={{ position: 'absolute', right: -30, top: -30, width: 150, height: 150, borderRadius: '50%', background: 'radial-gradient(circle,#0073a8,rgba(0,142,205,0) 70%)', opacity: .45 }} />
           <span style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: '#7fb8d6', position: 'relative' }}>Recommended test</span>
           {rec ? (
             <div style={{ position: 'relative', marginTop: 14 }}>
@@ -392,7 +392,7 @@ function Step3() {
               <span style={{ fontSize: 11, fontWeight: 700, color: '#0079b0' }}>DO · evaluative</span>
             </div>
           </div>
-          <div className="serif" style={{ fontSize: 12.5, color: '#6b6e76', fontStyle: 'italic', lineHeight: 1.5 }}>The farther right, the more you need Do data — actual behaviour, a more complete prototype, more time &amp; money.</div>
+          <div className="serif" style={{ fontSize: 12.5, color: '#5e6168', fontStyle: 'italic', lineHeight: 1.5 }}>The farther right, the more you need Do data — actual behaviour, a more complete prototype, more time &amp; money.</div>
         </Card>
         <Card style={{ padding: '18px 20px', borderRadius: 14 }}>
           <CardHeading title="Data Sort" tag="Template 8" />
@@ -411,7 +411,7 @@ function Step3() {
         </Card>
       </div>
 
-      <h4 style={{ margin: '0 0 11px', fontSize: 13.5, fontWeight: 700 }}>Test Digest <span style={{ fontWeight: 500, color: '#9b9c9f', fontSize: 11.5 }}>· Template 11 — the one-page test summary</span></h4>
+      <h4 style={{ margin: '0 0 11px', fontSize: 13.5, fontWeight: 700 }}>Test Digest <span style={{ fontWeight: 500, color: '#767676', fontSize: 11.5 }}>· Template 11 — the one-page test summary</span></h4>
       <Card style={{ padding: 20, borderRadius: 14 }}>
         <div className="fb-grid4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
           {[
@@ -423,7 +423,7 @@ function Step3() {
             <div key={cell.k}>
               <div style={{ fontSize: 10.5, fontWeight: 700, color: '#83878f', letterSpacing: '.04em', marginBottom: 5 }}>{cell.k}</div>
               <div style={{ fontSize: 13, fontWeight: 700, color: cell.vColor }}>{cell.v}</div>
-              <div style={{ fontSize: 11, color: '#9b9c9f', marginTop: 2 }}>{cell.sub}</div>
+              <div style={{ fontSize: 11, color: '#767676', marginTop: 2 }}>{cell.sub}</div>
             </div>
           ))}
         </div>
@@ -447,7 +447,7 @@ function Step4() {
     <div className="fb-screen">
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 18 }}>
         <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Building the prototype</h3>
-        <span className="serif" style={{ fontSize: 12, color: '#9b9c9f', fontStyle: 'italic' }}>the simplest stimulus that does the job</span>
+        <span className="serif" style={{ fontSize: 12, color: '#767676', fontStyle: 'italic' }}>the simplest stimulus that does the job</span>
       </div>
 
       <div className="fb-grid2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
@@ -464,9 +464,9 @@ function Step4() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[{ label: 'Form', hint: 'how it looks', v: 40 }, { label: 'Function', hint: 'how it works', v: 55 }, { label: 'Interactivity', hint: 'how it engages', v: 62 }].map(row => (
               <div key={row.label}>
-                <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 4 }}>{row.label} <span style={{ color: '#9b9c9f' }}>· {row.hint}</span></div>
+                <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 4 }}>{row.label} <span style={{ color: '#767676' }}>· {row.hint}</span></div>
                 <div style={{ height: 5, background: '#eef1f4', borderRadius: 4, overflow: 'hidden' }}>
-                  <span style={{ display: 'block', height: '100%', width: `${row.v}%`, background: '#008ecd', borderRadius: 4 }} />
+                  <span style={{ display: 'block', height: '100%', width: `${row.v}%`, background: '#0073a8', borderRadius: 4 }} />
                 </div>
               </div>
             ))}
@@ -475,7 +475,7 @@ function Step4() {
         <Card style={{ padding: 20, borderRadius: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <h4 style={{ margin: 0, fontSize: 13.5, fontWeight: 700 }}>Research Guide</h4>
-            <span style={{ fontSize: 11, color: '#9b9c9f' }}>consistent testers, right data</span>
+            <span style={{ fontSize: 11, color: '#767676' }}>consistent testers, right data</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
             {[
@@ -496,19 +496,19 @@ function Step4() {
         </Card>
       </div>
 
-      <h4 style={{ margin: '0 0 11px', fontSize: 13.5, fontWeight: 700 }}>Choose a format <span style={{ fontWeight: 500, color: '#9b9c9f', fontSize: 11.5 }}>· pick the fastest one that does the job</span></h4>
+      <h4 style={{ margin: '0 0 11px', fontSize: 13.5, fontWeight: 700 }}>Choose a format <span style={{ fontWeight: 500, color: '#767676', fontSize: 11.5 }}>· pick the fastest one that does the job</span></h4>
       <div className="fb-grid4" style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 12 }}>
         {formats.map(f => {
           const Icon = f.icon;
           return (
             <div key={f.label} style={{
-              background: f.selected ? '#eef7fc' : '#fff', border: f.selected ? '1.5px solid #008ecd' : '1px solid #e7eaee',
+              background: f.selected ? '#eef7fc' : '#fff', border: f.selected ? '1.5px solid #0073a8' : '1px solid #e7eaee',
               borderRadius: 12, padding: 14, textAlign: 'center', opacity: f.selected ? 1 : .75,
               boxShadow: f.selected ? '0 3px 12px rgba(0,142,205,.14)' : 'none',
             }}>
-              <Icon size={22} weight={f.selected ? 'fill' : 'regular'} color={f.selected ? '#008ecd' : '#5b6b7a'} style={{ margin: '0 auto', display: 'block' }} />
+              <Icon size={22} weight={f.selected ? 'fill' : 'regular'} color={f.selected ? '#0073a8' : '#5b6b7a'} style={{ margin: '0 auto', display: 'block' }} />
               <div style={{ fontSize: 12, fontWeight: 700, marginTop: 8, color: f.selected ? '#0079b0' : undefined }}>{f.label}</div>
-              <div style={{ fontSize: 10, color: f.selected ? '#0079b0' : '#9b9c9f', marginTop: 2, fontWeight: f.selected ? 600 : 400 }}>{f.sub}</div>
+              <div style={{ fontSize: 10, color: f.selected ? '#0079b0' : '#767676', marginTop: 2, fontWeight: f.selected ? 600 : 400 }}>{f.sub}</div>
             </div>
           );
         })}
@@ -530,7 +530,7 @@ function Step5() {
     <div className="fb-screen">
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 18 }}>
         <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Executing · Analyzing · Iterating</h3>
-        <span className="serif" style={{ fontSize: 12, color: '#9b9c9f', fontStyle: 'italic' }}>audit → pretest → run → analyze → iterate</span>
+        <span className="serif" style={{ fontSize: 12, color: '#767676', fontStyle: 'italic' }}>audit → pretest → run → analyze → iterate</span>
       </div>
 
       <div className="fb-grid2" style={{ display: 'grid', gridTemplateColumns: '.9fr 1.1fr', gap: 16, marginBottom: 24 }}>
@@ -558,7 +558,7 @@ function Step5() {
             </span>
             <div>
               <div style={{ fontSize: 12.5, fontWeight: 700 }}>Test is live</div>
-              <div style={{ fontSize: 11, color: '#9b9c9f' }}>Day 3 of 60 · 14 bags returned so far</div>
+              <div style={{ fontSize: 11, color: '#767676' }}>Day 3 of 60 · 14 bags returned so far</div>
             </div>
           </div>
         </Card>
@@ -566,7 +566,7 @@ function Step5() {
         <Card style={{ padding: 20, borderRadius: 14 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <h4 style={{ margin: 0, fontSize: 13.5, fontWeight: 700 }}>Results — threshold vs. actual</h4>
-            <span style={{ fontSize: 11, color: '#9b9c9f' }}>projected</span>
+            <span style={{ fontSize: 11, color: '#767676' }}>projected</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {results.map(r => (
@@ -574,7 +574,7 @@ function Step5() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
                   <span style={{ fontSize: 12, fontWeight: 600 }}>{r.label}</span>
                   <span style={{ fontSize: 12 }}>
-                    <b style={{ color: r.pass ? '#2ea38e' : '#c25a48' }}>{r.actual}</b> <span style={{ color: '#9b9c9f' }}>{r.vs}</span>{' '}
+                    <b style={{ color: r.pass ? '#2ea38e' : '#c25a48' }}>{r.actual}</b> <span style={{ color: '#767676' }}>{r.vs}</span>{' '}
                     <span style={{ fontSize: 10, fontWeight: 700, color: r.pass ? '#25826f' : '#b5502a', background: r.pass ? '#eef6f3' : '#fdf1ea', borderRadius: 20, padding: '1px 7px', marginLeft: 4 }}>{r.pass ? 'PASS' : 'BELOW'}</span>
                   </span>
                 </div>
@@ -589,7 +589,7 @@ function Step5() {
       </div>
 
       <div style={{ background: '#eef7fc', border: '1px solid #cfe8f6', borderRadius: 14, padding: '18px 20px', display: 'flex', gap: 14, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-        <span style={{ width: 36, height: 36, borderRadius: 10, background: '#008ecd', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
+        <span style={{ width: 36, height: 36, borderRadius: 10, background: '#0073a8', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
           <ArrowsClockwise size={19} weight="fill" color="#fff" />
         </span>
         <div style={{ flex: 1, minWidth: 220 }}>
@@ -598,7 +598,7 @@ function Step5() {
             Parents clearly want to recycle and will return shoes — move this component forward to a <b>smoke test</b> on the full subscription value proposition. But processing cost missed threshold: redesign the returns flow to consolidate shipments before the next round.
           </p>
         </div>
-        <button onClick={() => go('tests')} className="fb-btn-primary" style={{ flex: '0 0 auto', background: '#008ecd', color: '#fff', border: 'none', borderRadius: 9, padding: '9px 14px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>Design next test</button>
+        <button onClick={() => go('tests')} className="fb-btn-primary" style={{ flex: '0 0 auto', background: '#0073a8', color: '#fff', border: 'none', borderRadius: 9, padding: '9px 14px', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>Design next test</button>
       </div>
 
       <StepFooter backLabel="Step 4" onBack={() => setStep(4)} nextLabel="Log progress" onNext={() => go('progress')} nextColor="#2ea38e" nextHover="#25826f" />

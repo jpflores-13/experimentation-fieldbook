@@ -33,7 +33,7 @@ export function Chip({ children, color = '#0079b0', bg = '#eef7fc', border = '#c
 }
 
 export function SegmentBar({ segments }: { segments: (0 | 0.5 | 1)[] }) {
-  const colorFor = (v: 0 | 0.5 | 1) => (v === 1 ? '#008ecd' : v === 0.5 ? '#7cc4e6' : '#e7eaee');
+  const colorFor = (v: 0 | 0.5 | 1) => (v === 1 ? '#0073a8' : v === 0.5 ? '#7cc4e6' : '#e7eaee');
   return (
     <div style={{ display: 'flex', gap: 6 }}>
       {segments.map((s, i) => (
@@ -43,7 +43,7 @@ export function SegmentBar({ segments }: { segments: (0 | 0.5 | 1)[] }) {
   );
 }
 
-export function ThinBar({ value, color = '#008ecd', track = '#eef1f4', height = 5 }: { value: number; color?: string; track?: string; height?: number }) {
+export function ThinBar({ value, color = '#0073a8', track = '#eef1f4', height = 5 }: { value: number; color?: string; track?: string; height?: number }) {
   return (
     <div style={{ height, background: track, borderRadius: 4, overflow: 'hidden' }}>
       <span style={{ display: 'block', height: '100%', width: `${value}%`, background: color, borderRadius: 4 }} />
@@ -54,12 +54,12 @@ export function ThinBar({ value, color = '#008ecd', track = '#eef1f4', height = 
 export function SectionEyebrow({ step, children }: { step: number; children: ReactNode }) {
   return (
     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 11.5, fontWeight: 600, color: '#0079b0', background: '#eef7fc', border: '1px solid #cfe8f6', borderRadius: 20, padding: '4px 11px', marginBottom: 9 }}>
-      <span style={{ width: 18, height: 18, borderRadius: 6, background: '#008ecd', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700 }}>{step}</span>
+      <span style={{ width: 18, height: 18, borderRadius: 6, background: '#0073a8', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700 }}>{step}</span>
       {children}
     </div>
   );
 }
 
 export function TemplateTag({ children }: { children: ReactNode }) {
-  return <span style={{ fontSize: 11, color: '#9b9c9f' }}>{children}</span>;
+  return <span style={{ fontSize: 11, color: '#767676' }}>{children}</span>;
 }

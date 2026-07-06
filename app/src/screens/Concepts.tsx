@@ -5,8 +5,8 @@ import { Card, SectionEyebrow } from '../components/ui';
 
 const iconMap: Record<string, React.ElementType> = { SneakerMove, HandWaving, CompassTool, FirstAid, Lightning, Users };
 const accentBg: Record<string, string> = { blue: '#eef7fc', teal: '#eef6f3', slate: '#f1f3f6' };
-const accentFg: Record<string, string> = { blue: '#008ecd', teal: '#2ea38e', slate: '#5b6b7a' };
-const dotColor: Record<string, string> = { blue: '#008ecd', teal: '#2ea38e', slate: '#5b6b7a' };
+const accentFg: Record<string, string> = { blue: '#0073a8', teal: '#2ea38e', slate: '#5b6b7a' };
+const dotColor: Record<string, string> = { blue: '#0073a8', teal: '#2ea38e', slate: '#5b6b7a' };
 
 export function Concepts() {
   const { go } = useAppState();
@@ -17,11 +17,11 @@ export function Concepts() {
         <div style={{ flex: 1, minWidth: 240 }}>
           <SectionEyebrow step={1}>Step 1 · Frame a testable idea</SectionEyebrow>
           <h2 style={{ margin: '0 0 4px', fontSize: 20, fontWeight: 700, letterSpacing: '-.01em' }}>Concept portfolio</h2>
-          <p className="serif" style={{ margin: 0, fontSize: 13.5, color: '#6b6e76', maxWidth: 560, lineHeight: 1.5 }}>
+          <p className="serif" style={{ margin: 0, fontSize: 13.5, color: '#5e6168', maxWidth: 560, lineHeight: 1.5 }}>
             Map your ideas by the value they create and the effort to execute, then move a balanced portfolio into testing. <span style={{ fontStyle: 'italic' }}>Don't put all your eggs in one basket.</span>
           </p>
         </div>
-        <button onClick={() => go('workspace')} className="fb-btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#008ecd', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 15px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+        <button onClick={() => go('workspace')} className="fb-btn-primary" style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#0073a8', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 15px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
           <Plus size={14} weight="bold" /> New concept
         </button>
       </div>
@@ -31,12 +31,12 @@ export function Concepts() {
         <Card style={{ padding: '20px 22px 16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <h3 style={{ margin: 0, fontSize: 14.5, fontWeight: 700 }}>Value / Effort Matrix</h3>
-            <span style={{ fontSize: 11, color: '#9b9c9f' }}>Template 2</span>
+            <span style={{ fontSize: 11, color: '#767676' }}>Template 2</span>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', padding: '4px 0' }}>
               <span style={{ fontSize: 10, fontWeight: 700, color: '#83878f', writingMode: 'vertical-rl', transform: 'rotate(180deg)', letterSpacing: '.06em' }}>HIGH VALUE</span>
-              <span style={{ fontSize: 10.5, fontWeight: 700, color: '#008ecd', writingMode: 'vertical-rl', transform: 'rotate(180deg)', letterSpacing: '.1em' }}>VALUE</span>
+              <span style={{ fontSize: 10.5, fontWeight: 700, color: '#0073a8', writingMode: 'vertical-rl', transform: 'rotate(180deg)', letterSpacing: '.1em' }}>VALUE</span>
               <span style={{ fontSize: 10, fontWeight: 700, color: '#83878f', writingMode: 'vertical-rl', transform: 'rotate(180deg)', letterSpacing: '.06em' }}>LOW VALUE</span>
             </div>
             <div style={{ flex: 1 }}>
@@ -64,7 +64,7 @@ export function Concepts() {
                     <div key={c.id} title={c.name} style={{
                       position: 'absolute', top: `${top}%`, left: `${left}%`, transform: 'translate(-50%,-50%)',
                       display: 'flex', alignItems: 'center', gap: 7, background: '#fff',
-                      border: `1.5px solid ${isTop ? '#008ecd' : dotColor[c.accent] + '55'}`, borderRadius: 22,
+                      border: `1.5px solid ${isTop ? '#0073a8' : dotColor[c.accent] + '55'}`, borderRadius: 22,
                       padding: '4px 10px 4px 5px', boxShadow: isTop ? '0 3px 10px rgba(0,142,205,.18)' : '0 2px 8px rgba(0,0,0,.06)',
                       cursor: 'grab', whiteSpace: 'nowrap',
                     }}>
@@ -78,7 +78,7 @@ export function Concepts() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 7, padding: '0 2px' }}>
                 <span style={{ fontSize: 10, fontWeight: 700, color: '#83878f', letterSpacing: '.06em' }}>EASY TO EXECUTE</span>
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: '#008ecd', letterSpacing: '.1em' }}>EFFORT</span>
+                <span style={{ fontSize: 10.5, fontWeight: 700, color: '#0073a8', letterSpacing: '.1em' }}>EFFORT</span>
                 <span style={{ fontSize: 10, fontWeight: 700, color: '#83878f', letterSpacing: '.06em' }}>HARD TO EXECUTE</span>
               </div>
             </div>
@@ -89,7 +89,7 @@ export function Concepts() {
         <Card style={{ padding: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <h3 style={{ margin: 0, fontSize: 14.5, fontWeight: 700 }}>All concepts</h3>
-            <span style={{ fontSize: 11.5, color: '#9b9c9f', fontWeight: 600 }}>{concepts.length} total</span>
+            <span style={{ fontSize: 11.5, color: '#767676', fontWeight: 600 }}>{concepts.length} total</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {concepts.map(c => {
@@ -101,7 +101,7 @@ export function Concepts() {
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 700 }}>{c.name}</div>
-                    <div style={{ fontSize: 11, color: '#9b9c9f' }}>{c.statusLine}</div>
+                    <div style={{ fontSize: 11, color: '#767676' }}>{c.statusLine}</div>
                   </div>
                   <CaretRight color="#c9cbce" />
                 </div>

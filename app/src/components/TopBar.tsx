@@ -25,14 +25,14 @@ export function TopBar() {
         <MagnifyingGlass size={16} color="#9b9c9f" />
         <input placeholder="Search concepts, tests…" style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: 13, color: '#2c2e35', width: '100%' }} />
       </div>
-      <button className="fb-hover fb-hover-bg" style={{ position: 'relative', width: 40, height: 40, borderRadius: 10, border: '1px solid #e3e6ea', background: '#fff', cursor: 'pointer', color: '#5b5f67' }}>
+      <button className="fb-hover fb-hover-bg" aria-label="Notifications" style={{ position: 'relative', width: 40, height: 40, borderRadius: 10, border: '1px solid #e3e6ea', background: '#fff', cursor: 'pointer', color: '#5b5f67' }}>
         <Bell size={18} style={{ display: 'block', margin: '0 auto' }} />
-        <span style={{ position: 'absolute', top: 9, right: 10, width: 7, height: 7, borderRadius: '50%', background: '#008ecd', border: '1.5px solid #fff' }} />
+        <span style={{ position: 'absolute', top: 9, right: 10, width: 7, height: 7, borderRadius: '50%', background: '#0073a8', border: '1.5px solid #fff' }} />
       </button>
       <button
         className="fb-btn-primary"
         onClick={() => go('workspace')}
-        style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#008ecd', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 15px', fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,142,205,.35)', whiteSpace: 'nowrap' }}
+        style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#0073a8', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 15px', fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: '0 1px 2px rgba(0,142,205,.35)', whiteSpace: 'nowrap' }}
       >
         <Plus size={15} weight="bold" /> New concept
       </button>

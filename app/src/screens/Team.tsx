@@ -28,7 +28,7 @@ export function Team() {
                   <Avatar initials={m.initials} color={m.color} size={36} />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 13, fontWeight: 700 }}>{m.name}</div>
-                    <div style={{ fontSize: 11.5, color: '#9b9c9f' }}>{m.role}</div>
+                    <div style={{ fontSize: 11.5, color: '#767676' }}>{m.role}</div>
                   </div>
                   <span style={{ fontSize: 10.5, fontWeight: 600, color: rc.color, background: rc.bg, padding: '2px 9px', borderRadius: 20 }}>{m.roleTag}</span>
                 </div>
@@ -40,7 +40,7 @@ export function Team() {
         <Card style={{ padding: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 15 }}>
             <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Recent comments</h3>
-            <span style={{ fontSize: 11, color: '#9b9c9f' }}>across concepts</span>
+            <span style={{ fontSize: 11, color: '#767676' }}>across concepts</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {comments.map(c => {
@@ -59,9 +59,9 @@ export function Team() {
             })}
           </div>
           <div style={{ marginTop: 16, display: 'flex', gap: 9, alignItems: 'center', borderTop: '1px solid #eef0f2', paddingTop: 14 }}>
-            <Avatar initials="MA" color="#008ecd" size={28} />
-            <div style={{ flex: 1, background: '#f1f3f6', border: '1px solid #e3e6ea', borderRadius: 20, padding: '8px 14px', fontSize: 12, color: '#9b9c9f' }}>Add a comment…</div>
-            <button style={{ width: 34, height: 34, borderRadius: 9, border: 'none', background: '#008ecd', color: '#fff', cursor: 'pointer', flex: '0 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Avatar initials="MA" color="#0073a8" size={28} />
+            <div style={{ flex: 1, background: '#f1f3f6', border: '1px solid #e3e6ea', borderRadius: 20, padding: '8px 14px', fontSize: 12, color: '#767676' }}>Add a comment…</div>
+            <button style={{ width: 34, height: 34, borderRadius: 9, border: 'none', background: '#0073a8', color: '#fff', cursor: 'pointer', flex: '0 0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <PaperPlaneRight size={15} weight="fill" />
             </button>
           </div>

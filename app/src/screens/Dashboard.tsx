@@ -9,7 +9,7 @@ import type { HomeVariant } from '../types';
 
 const iconMap: Record<string, React.ElementType> = { SneakerMove, HandWaving, CompassTool, FirstAid, Lightning, Users };
 const accentBg: Record<string, string> = { blue: '#eef7fc', teal: '#eef6f3', slate: '#f1f3f6' };
-const accentFg: Record<string, string> = { blue: '#008ecd', teal: '#2ea38e', slate: '#5b6b7a' };
+const accentFg: Record<string, string> = { blue: '#0073a8', teal: '#2ea38e', slate: '#5b6b7a' };
 const chipStyle: Record<string, { color: string; bg: string; border: string }> = {
   blue: { color: '#0079b0', bg: '#eef7fc', border: '#cfe8f6' },
   teal: { color: '#25826f', bg: '#eef6f3', border: '#cfe9e2' },
@@ -21,7 +21,7 @@ export function Dashboard() {
 
   const toggle = (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-      <div className="serif" style={{ fontSize: 13, color: '#6b6e76', fontStyle: 'italic' }}>Dashboard home — explore 3 layout directions:</div>
+      <div className="serif" style={{ fontSize: 13, color: '#5e6168', fontStyle: 'italic' }}>Dashboard home — explore 3 layout directions:</div>
       <div style={{ display: 'inline-flex', background: '#fff', border: '1px solid #e3e6ea', borderRadius: 10, padding: 3, gap: 2 }}>
         {(['a', 'b', 'c'] as HomeVariant[]).map(v => {
           const labels: Record<HomeVariant, string> = { a: 'A · Mission control', b: 'B · Pipeline', c: 'C · Editorial' };
@@ -41,7 +41,7 @@ export function Dashboard() {
           );
         })}
       </div>
-      <span style={{ fontSize: 11.5, color: '#9b9c9f', background: '#fff', border: '1px solid #e3e6ea', borderRadius: 20, padding: '3px 10px' }}>id 1a / 1b / 1c</span>
+      <span style={{ fontSize: 11.5, color: '#767676', background: '#fff', border: '1px solid #e3e6ea', borderRadius: 20, padding: '3px 10px' }}>id 1a / 1b / 1c</span>
     </div>
   );
 
@@ -61,7 +61,7 @@ export function Dashboard() {
           <Card style={{ padding: '17px 18px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <span style={{ fontSize: 12, fontWeight: 600, color: '#83878f' }}>Active concepts</span>
-              <Stack size={17} color="#008ecd" />
+              <Stack size={17} color="#0073a8" />
             </div>
             <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-.02em' }}>6</div>
             <div style={{ fontSize: 11.5, color: '#2ea38e', fontWeight: 600, marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}><ArrowUp size={11} weight="bold" /> 2 added this sprint</div>
@@ -69,7 +69,7 @@ export function Dashboard() {
           <Card style={{ padding: '17px 18px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <span style={{ fontSize: 12, fontWeight: 600, color: '#83878f' }}>Tests running</span>
-              <TestTube size={17} color="#008ecd" />
+              <TestTube size={17} color="#0073a8" />
             </div>
             <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-.02em' }}>3</div>
             <div style={{ fontSize: 11.5, color: '#83878f', fontWeight: 500, marginTop: 3 }}>2 in field · 1 pretest</div>
@@ -77,7 +77,7 @@ export function Dashboard() {
           <Card style={{ padding: '17px 18px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <span style={{ fontSize: 12, fontWeight: 600, color: '#83878f' }}>Assumptions tested</span>
-              <ListChecks size={17} color="#008ecd" />
+              <ListChecks size={17} color="#0073a8" />
             </div>
             <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-.02em' }}>24<span style={{ fontSize: 16, color: '#bcbfc4', fontWeight: 600 }}>/41</span></div>
             <div style={{ marginTop: 8 }}><ThinBar value={59} /></div>
@@ -114,7 +114,7 @@ export function Dashboard() {
                       </div>
                       <div style={{ minWidth: 0, flex: 1 }}>
                         <div style={{ fontSize: 13.5, fontWeight: 700 }}>{c.name}</div>
-                        <div style={{ fontSize: 11.5, color: '#9b9c9f' }}>{c.subtitle}</div>
+                        <div style={{ fontSize: 11.5, color: '#767676' }}>{c.subtitle}</div>
                       </div>
                       <Chip color={cs.color} bg={cs.bg} border={cs.border}>{c.stepLabel}</Chip>
                       <Avatar initials={owner.initials} color={owner.color} />
@@ -141,8 +141,8 @@ export function Dashboard() {
                       {t.done && <span style={{ color: '#fff', fontSize: 12, fontWeight: 700 }}>✓</span>}
                     </span>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: t.done ? '#9b9c9f' : undefined, textDecoration: t.done ? 'line-through' : 'none' }}>{t.label}</div>
-                      <div style={{ fontSize: 11.5, color: '#9b9c9f' }}>{t.meta}</div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: t.done ? '#767676' : undefined, textDecoration: t.done ? 'line-through' : 'none' }}>{t.label}</div>
+                      <div style={{ fontSize: 11.5, color: '#767676' }}>{t.meta}</div>
                     </div>
                   </div>
                 ))}
@@ -151,7 +151,7 @@ export function Dashboard() {
             <Card style={{ padding: 19, flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 13 }}>
                 <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Team activity</h3>
-                <DotsThree size={18} color="#9b9c9f" />
+                <DotsThree size={18} color="#767676" />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {activity.map(a => {
@@ -178,15 +178,15 @@ export function Dashboard() {
     const cols: { n: number; label: string; step: number; color: string }[] = [
       { n: 1, label: 'Frame idea', step: 1, color: '#2c2e35' },
       { n: 2, label: 'Evidence', step: 2, color: '#2c2e35' },
-      { n: 3, label: 'Select test', step: 3, color: '#008ecd' },
-      { n: 4, label: 'Prototype', step: 4, color: '#008ecd' },
+      { n: 3, label: 'Select test', step: 3, color: '#0073a8' },
+      { n: 4, label: 'Prototype', step: 4, color: '#0073a8' },
       { n: 5, label: 'Execute', step: 5, color: '#2ea38e' },
     ];
     return (
       <div className="fb-screen">
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#6b6e76' }}>Pipeline</span>
-          <span style={{ fontSize: 12, color: '#9b9c9f' }}>— concepts flowing through the five steps. Drag to advance.</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#5e6168' }}>Pipeline</span>
+          <span style={{ fontSize: 12, color: '#767676' }}>— concepts flowing through the five steps. Drag to advance.</span>
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
             <span style={{ fontSize: 11.5, fontWeight: 600, background: '#fff', border: '1px solid #e3e6ea', borderRadius: 20, padding: '4px 11px', color: '#5b5f67', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Funnel size={12} /> All owners</span>
             <span style={{ fontSize: 11.5, fontWeight: 600, background: '#fff', border: '1px solid #e3e6ea', borderRadius: 20, padding: '4px 11px', color: '#5b5f67' }}>This quarter</span>
@@ -200,7 +200,7 @@ export function Dashboard() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 11 }}>
                   <span style={{ width: 22, height: 22, borderRadius: 7, background: col.color, color: '#fff', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{col.n}</span>
                   <span style={{ fontSize: 12.5, fontWeight: 700 }}>{col.label}</span>
-                  <span style={{ marginLeft: 'auto', fontSize: 11, color: '#9b9c9f', fontWeight: 600 }}>{items.length}</span>
+                  <span style={{ marginLeft: 'auto', fontSize: 11, color: '#767676', fontWeight: 600 }}>{items.length}</span>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {items.map(c => {
@@ -209,7 +209,7 @@ export function Dashboard() {
                     return (
                       <div key={c.id} onClick={() => go('workspace')} className="fb-hover fb-hover-row" style={{ background: '#fff', border: '1px solid #e7eaee', borderRadius: 12, padding: 13, cursor: 'pointer' }}>
                         <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 3 }}>{c.name}</div>
-                        <div style={{ fontSize: 11, color: '#9b9c9f', marginBottom: 9 }}>{c.subtitle}</div>
+                        <div style={{ fontSize: 11, color: '#767676', marginBottom: 9 }}>{c.subtitle}</div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <Chip color={cs.color} bg={cs.bg} border="transparent" style={{ border: 'none', padding: '2px 8px', fontSize: 10.5 }}>{c.quadrantLabel}</Chip>
                           <Avatar initials={owner.initials} color={owner.color} size={22} />
@@ -230,14 +230,14 @@ export function Dashboard() {
     return (
       <div className="fb-screen">
         <div style={{ background: '#2c2e35', borderRadius: 18, padding: '30px 32px', color: '#fff', position: 'relative', overflow: 'hidden', marginBottom: 18 }}>
-          <div style={{ position: 'absolute', right: -40, top: -40, width: 230, height: 230, borderRadius: '50%', background: 'radial-gradient(circle,#008ecd 0%,rgba(0,142,205,0) 70%)', opacity: .5 }} />
+          <div style={{ position: 'absolute', right: -40, top: -40, width: 230, height: 230, borderRadius: '50%', background: 'radial-gradient(circle,#0073a8 0%,rgba(0,142,205,0) 70%)', opacity: .5 }} />
           <div style={{ position: 'relative', display: 'flex', gap: 26, flexWrap: 'wrap', alignItems: 'flex-end' }}>
             <div style={{ flex: 1, minWidth: 260 }}>
               <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: '#7fccbb' }}>In the field now · Step 5</span>
               <h2 className="serif" style={{ fontSize: 32, fontWeight: 600, letterSpacing: '-.02em', margin: '8px 0 8px', lineHeight: 1.08 }}>Welcome Host trial<br />is running at 8 stations.</h2>
               <p className="serif" style={{ fontSize: 14.5, color: '#b6b9c0', margin: '0 0 18px', maxWidth: 440, lineHeight: 1.5 }}>Over 13,000 customer interactions logged. Desirability assumptions are holding — the warm-welcome metric is well past threshold.</p>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                <button onClick={() => go('workspace')} className="fb-btn-primary" style={{ background: '#008ecd', color: '#fff', border: 'none', borderRadius: 10, padding: '11px 17px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Open workspace</button>
+                <button onClick={() => go('workspace')} className="fb-btn-primary" style={{ background: '#0073a8', color: '#fff', border: 'none', borderRadius: 10, padding: '11px 17px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Open workspace</button>
                 <button onClick={() => go('tests')} style={{ background: 'rgba(255,255,255,.08)', color: '#fff', border: '1px solid rgba(255,255,255,.18)', borderRadius: 10, padding: '11px 17px', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>View results</button>
               </div>
             </div>
@@ -249,7 +249,7 @@ export function Dashboard() {
         </div>
         <div className="fb-grid3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16 }}>
           <Card style={{ padding: 19 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 13 }}><ListChecks size={18} color="#008ecd" /><h3 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>This week</h3></div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 13 }}><ListChecks size={18} color="#0073a8" /><h3 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>This week</h3></div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
               {tasks.map(t => (
                 <div key={t.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
@@ -258,13 +258,13 @@ export function Dashboard() {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     background: t.done ? '#2ea38e' : 'transparent', border: t.done ? 'none' : '1.5px solid #c9cbce',
                   }}>{t.done && <span style={{ color: '#fff', fontSize: 11, fontWeight: 700 }}>✓</span>}</span>
-                  <span style={{ fontSize: 12.5, lineHeight: 1.35, color: t.done ? '#9b9c9f' : undefined, textDecoration: t.done ? 'line-through' : 'none' }}>{t.label}</span>
+                  <span style={{ fontSize: 12.5, lineHeight: 1.35, color: t.done ? '#767676' : undefined, textDecoration: t.done ? 'line-through' : 'none' }}>{t.label}</span>
                 </div>
               ))}
             </div>
           </Card>
           <Card style={{ padding: 19 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 13 }}><Stack size={18} color="#008ecd" /><h3 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>Portfolio</h3></div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 13 }}><Stack size={18} color="#0073a8" /><h3 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>Portfolio</h3></div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
               {concepts.filter(c => !c.shelved).slice(0, 4).map(c => {
                 const cs = chipStyle[c.accent];
@@ -291,7 +291,7 @@ export function Dashboard() {
                     <span style={{ fontWeight: 600 }}>{row.label}</span>
                     <span style={{ color: row.color, fontWeight: 700 }}>{row.status}</span>
                   </div>
-                  <ThinBar value={row.value} color={row.value < 30 ? '#d98a7c' : row.color === '#0079b0' ? '#008ecd' : row.color} height={6} />
+                  <ThinBar value={row.value} color={row.value < 30 ? '#d98a7c' : row.color === '#0079b0' ? '#0073a8' : row.color} height={6} />
                 </div>
               ))}
             </div>
