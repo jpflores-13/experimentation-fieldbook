@@ -2,42 +2,42 @@ import type { Concept, TestRow } from '../types';
 
 export const concepts: Concept[] = [
   {
-    id: 'easykicks', name: 'Easykicks subscription', subtitle: 'Shoe recycling component · Nike', org: 'Nike',
+    id: 'easykicks', name: 'Easykicks subscription', org: 'Nike',
     description: 'testing whether parents will return old shoes',
 accent: 'blue', step: 4, stepLabel: 'Step 4 · Prototype',
     segments: [1, 1, 1, 0.5, 0], value: 84, effort: 18, quadrantLabel: 'Quick win',
     statusLine: 'Quick win · 2 of 3 critical assumptions tested',
   },
   {
-    id: 'welcome-host', name: 'Welcome Host', subtitle: 'Station concierge · South Western Railway', org: 'South Western Railway',
+    id: 'welcome-host', name: 'Welcome Host', org: 'South Western Railway',
     description: 'testing whether station staff can double as concierges',
 accent: 'teal', step: 5, stepLabel: 'Step 5 · Trial',
     segments: [1, 1, 1, 1, 0.5], value: 73, effort: 52, quadrantLabel: 'Strategic bet',
     statusLine: 'Strategic bet · validated, scaling',
   },
   {
-    id: 'career-navigator', name: 'Career Navigator', subtitle: 'Self-assessment tool · PMI', org: 'PMI',
+    id: 'career-navigator', name: 'Career Navigator', org: 'PMI',
     description: 'testing whether members will complete a self-guided assessment',
 accent: 'blue', step: 3, stepLabel: 'Step 3 · Test design',
     segments: [1, 1, 0.5, 0, 0], value: 68, effort: 73, quadrantLabel: 'Strategic bet',
     statusLine: 'Strategic bet · designing test',
   },
   {
-    id: 'er-fast-track', name: 'ER Fast-Track', subtitle: 'Triage at entrance · Whiteriver Hospital', org: 'Whiteriver Hospital',
+    id: 'er-fast-track', name: 'ER Fast-Track', org: 'Whiteriver Hospital',
     description: 'testing whether entrance triage reduces wait times',
 accent: 'slate', step: 2, stepLabel: 'Step 2 · Evidence',
     segments: [1, 0.5, 0, 0, 0], value: 58, effort: 28, quadrantLabel: 'Quick win',
     statusLine: 'Quick win · surfacing assumptions',
   },
   {
-    id: 'snippets', name: 'Snippets micro-learning', subtitle: 'PMI · value/effort mapped', org: 'PMI',
+    id: 'snippets', name: 'Snippets micro-learning', org: 'PMI',
     description: 'testing whether short-form lessons improve completion rates',
 accent: 'slate', step: 1, stepLabel: 'Step 1 · Frame',
     segments: [0.5, 0, 0, 0, 0], value: 38, effort: 24, quadrantLabel: 'Fill-in',
     statusLine: 'Fill-in · concept snapshot',
   },
   {
-    id: 'hive', name: 'Hive peer network', subtitle: 'PMI · concept snapshot draft', org: 'PMI',
+    id: 'hive', name: 'Hive peer network', org: 'PMI',
     description: 'testing whether peers will self-organize without a facilitator',
 accent: 'slate', step: 1, stepLabel: 'Step 1 · Frame',
     segments: [0.5, 0, 0, 0, 0], value: 30, effort: 76, quadrantLabel: 'Avoid',

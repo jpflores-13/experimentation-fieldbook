@@ -10,7 +10,6 @@ export type Quadrant = 'quick-win' | 'strategic-bet' | 'fill-in' | 'avoid';
 export interface Concept {
   id: string;
   name: string;
-  subtitle: string;
   description: string; // context line shown in the workspace header, e.g. "testing whether parents will return old shoes"
   org: string;
   accent: 'blue' | 'teal' | 'slate';

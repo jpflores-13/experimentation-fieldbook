@@ -105,7 +105,8 @@ interface AppStateValue extends PersistedState {
   createConcept: () => string;
   deleteConcept: (id: string) => void;
   clearConcepts: () => void;
-  updateConcept: (id: string, patch: Partial<Pick<Concept, 'name' | 'org' | 'description' | 'subtitle'>>) => void;
+  updateConcept: (id: string, patch: Partial<Pick<Concept, 'name' | 'org' | 'description'>>) => void;
+  moveConcept: (id: string, value: number, effort: number) => void;
 
   // Tests
   deleteTest: (id: string) => void;
@@ -307,7 +308,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     createConcept: () => {
       const id = newId('concept');
       const concept: Concept = {
-        id, name: 'New concept', subtitle: 'Untitled · add an organization', description: '', org: '',
+        id, name: 'New concept', description: '', org: '',
         accent: 'blue', step: 1, stepLabel: 'Step 1 · Frame',
         segments: [0, 0, 0, 0, 0], value: 50, effort: 50, quadrantLabel: 'Quick win', statusLine: 'Just started',
       };
@@ -335,6 +336,9 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     },
     updateConcept: (id, patchFields) => {
       setState(s => ({ ...s, concepts: s.concepts.map(c => (c.id === id ? { ...c, ...patchFields } : c)) }));
+    },
+    moveConcept: (id, value, effort) => {
+      setState(s => ({ ...s, concepts: s.concepts.map(c => (c.id === id ? { ...c, value, effort } : c)) }));
     },
 
     // ---- Tests ----

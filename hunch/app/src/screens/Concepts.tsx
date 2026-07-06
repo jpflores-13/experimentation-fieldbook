@@ -1,14 +1,77 @@
+import { useRef, useState } from 'react';
 import { Plus, CaretRight, Lightbulb, X } from '@phosphor-icons/react';
 import { useAppState } from '../state/AppState';
 import { Card, SectionEyebrow } from '../components/ui';
 import { PopoutButton } from '../components/PopoutButton';
+import type { Concept } from '../types';
 
 const accentBg: Record<string, string> = { blue: '#eef7fc', teal: '#eef6f3', slate: '#f1f3f6' };
 const accentFg: Record<string, string> = { blue: '#008ecd', teal: '#2ea38e', slate: '#5b6b7a' };
 const dotColor: Record<string, string> = { blue: '#008ecd', teal: '#2ea38e', slate: '#5b6b7a' };
 
+function MatrixPill({ concept, isActive, containerRef }: {
+  concept: Concept; isActive: boolean; containerRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  const { setActiveConcept, moveConcept } = useAppState();
+  const [dragPos, setDragPos] = useState<{ value: number; effort: number } | null>(null);
+  const dragInfo = useRef<{ startX: number; startY: number; origValue: number; origEffort: number; moved: boolean } | null>(null);
+
+  const value = dragPos?.value ?? concept.value;
+  const effort = dragPos?.effort ?? concept.effort;
+  const top = 100 - value;
+  const left = effort;
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    dragInfo.current = { startX: e.clientX, startY: e.clientY, origValue: concept.value, origEffort: concept.effort, moved: false };
+  };
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!dragInfo.current || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const dxPct = ((e.clientX - dragInfo.current.startX) / rect.width) * 100;
+    const dyPct = ((e.clientY - dragInfo.current.startY) / rect.height) * 100;
+    if (Math.abs(dxPct) + Math.abs(dyPct) > 0.6) dragInfo.current.moved = true;
+    const newEffort = Math.min(98, Math.max(2, dragInfo.current.origEffort + dxPct));
+    const newValue = Math.min(98, Math.max(2, dragInfo.current.origValue - dyPct));
+    setDragPos({ value: newValue, effort: newEffort });
+  };
+  const onPointerUp = () => {
+    if (!dragInfo.current) return;
+    if (dragInfo.current.moved && dragPos) {
+      moveConcept(concept.id, dragPos.value, dragPos.effort);
+    } else {
+      setActiveConcept(concept.id);
+    }
+    dragInfo.current = null;
+    setDragPos(null);
+  };
+
+  return (
+    <div
+      title={concept.name}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      style={{
+        position: 'absolute', top: `${top}%`, left: `${left}%`, transform: 'translate(-50%,-50%)',
+        display: 'flex', alignItems: 'center', gap: 7, background: '#fff',
+        border: `1.5px solid ${isActive ? '#008ecd' : dotColor[concept.accent] + '55'}`, borderRadius: 22,
+        padding: '4px 10px 4px 5px', boxShadow: isActive ? '0 3px 10px rgba(0,142,205,.18)' : '0 2px 8px rgba(0,0,0,.06)',
+        cursor: dragInfo.current ? 'grabbing' : 'grab', whiteSpace: 'nowrap', userSelect: 'none', touchAction: 'none',
+        zIndex: dragPos ? 3 : 1,
+      }}
+    >
+      <span style={{ width: 18, height: 18, borderRadius: '50%', background: dotColor[concept.accent], display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
+        <Lightbulb size={10} weight="fill" color="#fff" />
+      </span>
+      <span style={{ fontSize: 11, fontWeight: 700 }}>{concept.name.split(' ').slice(0, 2).join(' ')}</span>
+    </div>
+  );
+}
+
 export function ValueEffortMatrix() {
-  const { concepts, setActiveConcept, activeConceptId } = useAppState();
+  const { concepts, activeConceptId } = useAppState();
+  const plotRef = useRef<HTMLDivElement>(null);
   return (
     <Card style={{ padding: '20px 22px 16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, gap: 10, flexWrap: 'wrap' }}>
@@ -25,7 +88,7 @@ export function ValueEffortMatrix() {
           <span style={{ fontSize: 10, fontWeight: 700, color: '#83878f', writingMode: 'vertical-rl', transform: 'rotate(180deg)', letterSpacing: '.06em' }}>LOW VALUE</span>
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ position: 'relative', width: '100%', paddingTop: '92%', border: '1px solid #e3e6ea', borderRadius: 12, overflow: 'hidden' }}>
+          <div ref={plotRef} style={{ position: 'relative', width: '100%', paddingTop: '92%', border: '1px solid #e3e6ea', borderRadius: 12, overflow: 'hidden' }}>
             <div style={{ position: 'absolute', inset: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr' }}>
               <div style={{ background: '#eef7fc', borderRight: '1px dashed #cdd6dc', borderBottom: '1px dashed #cdd6dc', display: 'flex', alignItems: 'flex-start', padding: 8 }}>
                 <span style={{ fontSize: 10, fontWeight: 700, color: '#0079b0', background: '#fff', borderRadius: 6, padding: '2px 7px', boxShadow: '0 1px 3px rgba(0,0,0,.05)' }}>QUICK WINS</span>
@@ -40,25 +103,9 @@ export function ValueEffortMatrix() {
                 <span style={{ fontSize: 10, fontWeight: 700, color: '#b0b3b8' }}>AVOID</span>
               </div>
             </div>
-            {concepts.map(c => {
-              const top = 100 - c.value;
-              const left = c.effort;
-              const isActive = c.id === activeConceptId;
-              return (
-                <div key={c.id} title={c.name} onClick={() => setActiveConcept(c.id)} style={{
-                  position: 'absolute', top: `${top}%`, left: `${left}%`, transform: 'translate(-50%,-50%)',
-                  display: 'flex', alignItems: 'center', gap: 7, background: '#fff',
-                  border: `1.5px solid ${isActive ? '#008ecd' : dotColor[c.accent] + '55'}`, borderRadius: 22,
-                  padding: '4px 10px 4px 5px', boxShadow: isActive ? '0 3px 10px rgba(0,142,205,.18)' : '0 2px 8px rgba(0,0,0,.06)',
-                  cursor: 'pointer', whiteSpace: 'nowrap',
-                }}>
-                  <span style={{ width: 18, height: 18, borderRadius: '50%', background: dotColor[c.accent], display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Lightbulb size={10} weight="fill" color="#fff" />
-                  </span>
-                  <span style={{ fontSize: 11, fontWeight: 700 }}>{c.name.split(' ').slice(0, 2).join(' ')}</span>
-                </div>
-              );
-            })}
+            {concepts.map(c => (
+              <MatrixPill key={c.id} concept={c} isActive={c.id === activeConceptId} containerRef={plotRef} />
+            ))}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 7, padding: '0 2px' }}>
             <span style={{ fontSize: 10, fontWeight: 700, color: '#83878f', letterSpacing: '.06em' }}>EASY TO EXECUTE</span>

@@ -4,8 +4,12 @@ import {
 } from '@phosphor-icons/react';
 import { useAppState } from '../state/AppState';
 import { Card, Chip, SegmentBar } from '../components/ui';
-import type { HomeVariant } from '../types';
+import type { HomeVariant, Concept } from '../types';
 import { GUIDE_URL } from '../config';
+
+function conceptSubline(c: Concept) {
+  return [c.org, c.description].filter(Boolean).join(' · ') || 'Add an organization & description';
+}
 
 const accentBg: Record<string, string> = { blue: '#eef7fc', teal: '#eef6f3', slate: '#f1f3f6' };
 const accentFg: Record<string, string> = { blue: '#008ecd', teal: '#2ea38e', slate: '#5b6b7a' };
@@ -92,7 +96,7 @@ export function Dashboard() {
                     </div>
                     <div style={{ minWidth: 0, flex: 1 }}>
                       <div style={{ fontSize: 13.5, fontWeight: 700 }}>{c.name}</div>
-                      <div style={{ fontSize: 11.5, color: '#9b9c9f' }}>{c.subtitle}</div>
+                      <div style={{ fontSize: 11.5, color: '#9b9c9f' }}>{conceptSubline(c)}</div>
                     </div>
                     <Chip color={cs.color} bg={cs.bg} border={cs.border}>{c.stepLabel}</Chip>
                     <button
@@ -155,7 +159,7 @@ export function Dashboard() {
                           <X size={13} />
                         </button>
                         <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 3, paddingRight: 16 }}>{c.name}</div>
-                        <div style={{ fontSize: 11, color: '#9b9c9f', marginBottom: 9 }}>{c.subtitle}</div>
+                        <div style={{ fontSize: 11, color: '#9b9c9f', marginBottom: 9 }}>{conceptSubline(c)}</div>
                         <Chip color={cs.color} bg={cs.bg} border="transparent" style={{ border: 'none', padding: '2px 8px', fontSize: 10.5 }}>{c.quadrantLabel}</Chip>
                       </div>
                     );
