@@ -73,11 +73,20 @@ export function Systems() {
   );
 }
 
-function LegendRow({ swatch, border, children }: { swatch: string; border: string; children: ReactNode }) {
+function LegendRow({ swatch, border, onClear, children }: { swatch: string; border: string; onClear?: () => void; children: ReactNode }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
       <span style={{ width: 16, height: 16, borderRadius: 4, background: swatch, border: `1px solid ${border}`, flex: '0 0 auto' }} />
-      <span style={{ fontSize: 12.5 }}>{children}</span>
+      <span style={{ fontSize: 12.5, flex: 1 }}>{children}</span>
+      {onClear && (
+        <button
+          onClick={onClear}
+          title="Clear"
+          style={{ border: 'none', background: 'transparent', color: '#b0b3b8', cursor: 'pointer', padding: 2, display: 'flex', flex: '0 0 auto' }}
+        >
+          <Trash size={12} />
+        </button>
+      )}
     </div>
   );
 }
@@ -249,7 +258,7 @@ function RingNote({ note, containerRef, startEditing, onEditStarted }: {
 }
 
 export function SupportMapTab() {
-  const { supportMaps, addSupportNote, renameSupportMap } = useAppState();
+  const { supportMaps, addSupportNote, renameSupportMap, clearSupportRing, clearSupportMap } = useAppState();
   const map = supportMaps[ACTIVE_MAP_ID];
   const containerRef = useRef<HTMLDivElement>(null);
   const [justAddedId, setJustAddedId] = useState<string | null>(null);
@@ -273,6 +282,11 @@ export function SupportMapTab() {
           />
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ fontSize: 11, color: '#9b9c9f' }}>role-centred map · click a note to rename, drag to move</span>
+            <button
+              onClick={() => { if (window.confirm('Clear the whole map? All notes will be removed and the role reset.')) clearSupportMap(ACTIVE_MAP_ID); }}
+              title="Clear map"
+              style={{ border: '1px solid #f0d7d2', background: '#fff', borderRadius: 6, padding: '5px 9px', fontSize: 11.5, fontWeight: 600, color: '#b5502a', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}
+            ><Trash size={13} /> Clear all</button>
             <PopoutButton tool="support" />
           </div>
         </div>
@@ -296,11 +310,11 @@ export function SupportMapTab() {
         <Card style={{ padding: 18, borderRadius: 14 }}>
           <h4 style={{ margin: '0 0 12px', fontSize: 13.5, fontWeight: 700 }}>Legend</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-            <LegendRow swatch="#fde6a9" border="#ecc65f"><b>Role</b> — you, at the centre</LegendRow>
-            <LegendRow swatch="#ffd6a5" border="#eab26a"><b>Responsibilities</b> — what you do</LegendRow>
-            <LegendRow swatch="#ffc2c2" border="#e59595"><b>Needs</b> — what each duty requires</LegendRow>
-            <LegendRow swatch="#bfe0f5" border="#86c3e6"><b>Resources</b> — what you draw on</LegendRow>
-            <LegendRow swatch="#c3e8d7" border="#83ccae"><b>Wishes</b> — what would help</LegendRow>
+            <LegendRow swatch="#fde6a9" border="#ecc65f" onClear={() => { if (window.confirm('Reset the role note to its default text?')) clearSupportRing(ACTIVE_MAP_ID, 'role'); }}><b>Role</b> — you, at the centre</LegendRow>
+            <LegendRow swatch="#ffd6a5" border="#eab26a" onClear={() => { if (window.confirm('Clear all responsibility notes?')) clearSupportRing(ACTIVE_MAP_ID, 'responsibility'); }}><b>Responsibilities</b> — what you do</LegendRow>
+            <LegendRow swatch="#ffc2c2" border="#e59595" onClear={() => { if (window.confirm('Clear all need notes?')) clearSupportRing(ACTIVE_MAP_ID, 'need'); }}><b>Needs</b> — what each duty requires</LegendRow>
+            <LegendRow swatch="#bfe0f5" border="#86c3e6" onClear={() => { if (window.confirm('Clear all resource notes?')) clearSupportRing(ACTIVE_MAP_ID, 'resource'); }}><b>Resources</b> — what you draw on</LegendRow>
+            <LegendRow swatch="#c3e8d7" border="#83ccae" onClear={() => { if (window.confirm('Clear all wish notes?')) clearSupportRing(ACTIVE_MAP_ID, 'wish'); }}><b>Wishes</b> — what would help</LegendRow>
           </div>
           <div style={{ marginTop: 13, paddingTop: 12, borderTop: '1px solid #eef0f2', display: 'flex', gap: 14 }}>
             <span style={{ fontSize: 11, color: '#5b5f67', display: 'flex', alignItems: 'center', gap: 5 }}><Star size={12} weight="fill" color="#2ea38e" /> helpful</span>
@@ -1005,7 +1019,7 @@ export function FiveRsTab() {
             Adapted from USAID's 5Rs Framework for listening to a local system "as is." Rate each element 0–5, answer the guiding questions from Table 1 of the technical note, and note any gaps you find.
           </p>
           <p style={{ margin: 0, fontSize: 11, color: '#5b8ba3', fontStyle: 'italic' }}>
-            USAID, "The 5Rs Framework in the Program Cycle," Technical Note, Version 2.1, October 2016.
+            USAID, "<a href="https://beamexchange.org/documents/2975/5rs-framework-techncial_note_usaid.pdf" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>The 5Rs Framework in the Program Cycle</a>," Technical Note, Version 2.1, October 2016.
           </p>
         </div>
       </div>

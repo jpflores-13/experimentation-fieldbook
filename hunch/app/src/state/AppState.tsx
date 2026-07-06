@@ -90,6 +90,8 @@ interface AppStateValue extends PersistedState {
   moveSupportNote: (mapId: string, noteId: string, x: number, y: number) => void;
   deleteSupportNote: (mapId: string, noteId: string) => void;
   cycleSupportNoteStar: (mapId: string, noteId: string) => void;
+  clearSupportRing: (mapId: string, ring: Ring) => void;
+  clearSupportMap: (mapId: string) => void;
   addLoopNode: (graphId: string) => string;
   renameLoopNode: (graphId: string, nodeId: string, label: string) => void;
   moveLoopNode: (graphId: string, nodeId: string, x: number, y: number) => void;
@@ -261,6 +263,20 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
         const next = starCycle[(idx + 1) % starCycle.length];
         return { ...n, star: next };
       });
+    },
+    clearSupportRing: (mapId, ring) => {
+      updateMap(mapId, m => ({
+        ...m,
+        notes: ring === 'role'
+          ? m.notes.map(n => (n.ring === 'role' ? { ...n, text: 'Your role' } : n))
+          : m.notes.filter(n => n.ring !== ring),
+      }));
+    },
+    clearSupportMap: (mapId) => {
+      updateMap(mapId, m => ({
+        ...m,
+        notes: m.notes.filter(n => n.ring === 'role').map(n => ({ ...n, text: 'Your role' })),
+      }));
     },
     addLoopNode: (graphId) => {
       const count = state.loopGraphs[graphId]?.nodes.length ?? 0;
